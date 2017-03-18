@@ -1,19 +1,25 @@
 VAGRANTFILE_API_VERSION = "2"
 
+disk = './secondDisk.vdi'
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
   #config.ssh.insert_key = false
 
   config.vm.define "controller" do |controller|
-    controller.vm.box = "ubuntu/xenial64"
+    controller.vm.box = "geerlingguy/ubuntu1604"
     config.vm.hostname = "controller"
     controller.vm.network "forwarded_port", guest: 80, host: 8081
     controller.vm.network "forwarded_port", guest: 22, host: 2201 
     controller.vm.network "private_network", ip: "10.0.1.11"
     controller.vm.network "private_network", ip: "192.168.100.11"
     controller.vm.provider "virtualbox" do |v|
+      unless File.exist?(disk)
+        v.customize ['createhd', '--filename', disk, '--variant', 'Standard', '--size', 20 * 1024]
+      end
       v.memory = 8192
       v.cpus = 4
+      v.customize ['storageattach', :id, '--storagectl', 'IDE Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
+     #v.customize ['storagectl', :id, '--name', 'SATA Controller', '--add', 'sata', '--portcount', 4]
     end
   end
   config.vm.define "network" do |network|
