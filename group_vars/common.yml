@@ -1,0 +1,21 @@
+---
+TestVar1 : TestVarValue
+controller_management_ip : 10.0.0.11
+mysql_root : root
+mysql_root_password : Data8ase-mart
+db_ip : "{{controller_management_ip}}"
+rabbitmq_admin : openstack
+rabbitmq_admin_password : Data8ase-mart
+
+os_admin : admin
+os_admin_password : Data8ase-mart
+os_url: "http://controller:35357/v3"
+os_region: RegionOne
+
+
+demo_password: "{{os_admin_password}}"
+
+general_password: "{{admin_password}}"
+
+auth_options: "--os-username={{os_admin}} --os-password={{os_admin_password}} --os-auth-url={{os_url}} --os-identity-api-version=3 --os-project-domain-name=default --os-domain-name=default --os-project-name=admin"
+

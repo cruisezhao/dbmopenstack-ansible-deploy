@@ -1,0 +1,6 @@
+---
+keystone_db_user : keystone
+keystone_db_password : Data8ase-mart
+keystone_db : keystone
+keystone_user : keystone
+keystone_password : Data8ase-mart

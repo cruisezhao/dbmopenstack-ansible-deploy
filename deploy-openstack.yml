@@ -1,0 +1,23 @@
+---
+- name: Prepare controller
+  hosts: controller
+  sudo: True
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Install pip
+      apt: pkg={{item}} state=present
+      with_items:
+        - python-pip
+        - libmysqlclient-dev
+      sudo: True
+
+  tasks:
+    #    - name: Test commond
+    #  command: "ping openstack.org -c 4"
+
+  roles:
+    - role: common
+    - role: keystone
+

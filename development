@@ -1,0 +1,26 @@
+[common]
+controller ansible_ssh_host=10.0.0.11 #ansible_ssh_port=2201
+network ansible_ssh_host=10.0.0.21 #ansible_ssh_port=2202
+compute01 ansible_ssh_host=10.0.0.31 #ansible_ssh_port=2203
+
+[network]
+network ansible_ssh_host=127.0.0.1 ansible_ssh_port=2202
+
+[compute]
+compute01 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2203
+
+
+[keystone]
+controller
+
+
+
+
+
+[group2]
+
+
+[compute:vars]
+author=Jim
+
+

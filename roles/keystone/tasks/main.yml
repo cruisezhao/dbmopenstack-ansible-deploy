@@ -1,0 +1,71 @@
+- name: Create keystone database
+  mysql_db: name=keystone state=present
+
+- name: ceate keystone db user
+  mysql_user: name=keystone password={{keystone_db_password}} priv=keystone.*:ALL host=% state=present
+- name: ceate keystone db user
+  mysql_user: name=keystone password={{keystone_db_password}} priv=keystone.*:ALL host=localhost state=present
+- name: ceate keystone db user
+  mysql_user: name=keystone password={{keystone_db_password}} priv=keystone.*:ALL host=controller state=present
+
+- name: Install keystone
+  apt: pkg=keystone update_cache=yes cache_valid_time=3600
+
+- name: replace keytone.conf
+  template: src=keystone.conf.j2 dest=/etc/keystone/keystone.conf
+- name: sync keystone db
+  #raw:  '"keystone-manage db_sync" keystone'
+  raw:  su -s /bin/sh -c "keystone-manage db_sync" keystone 
+  args:
+    executable: /bin/sh
+
+- name: bootstrap keystone
+  raw: >         
+    keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone;
+    keystone-manage credential_setup --keystone-user keystone --keystone-group keystone;
+    keystone-manage bootstrap --bootstrap-password {{os_admin_password}} --bootstrap-admin-url http://controller:35357/v3/ --bootstrap-internal-url http://controller:35357/v3/ --bootstrap-public-url http://controller:5000/v3/ --bootstrap-region-id RegionOne
+    
+- name: Add servername to apache2.conf
+  lineinfile:
+    dest: /etc/apache2/apache2.conf
+    regexp: "ServerName {{inventory_hostname}}"
+    insertbefore: BOF
+    line: "ServerName {{inventory_hostname}}"
+
+- name: Start Apache
+  service: name=apache2 state=started
+
+- name: Restart mysql
+  service: name=mysql state=restarted
+
+- name: Remove /var/lib/keystone/keystone.db
+  file:
+    path: /var/lib/keystone/keystone.db
+    state: absent
+
+- name: Create Service  project
+  shell: >
+    openstack project create --domain default  {{auth_options}} --description 'Service Project' service 
+  ignore_errors: True
+
+- name: Create demo  project
+  shell: >
+    openstack project create --domain default --description 'Demo Project' demo {{auth_options}}
+  ignore_errors: True
+
+- name: Create demo user
+  shell: >
+    openstack user create --domain default --password {{demo_password}} demo {{auth_options}}
+
+- name: Create role user
+  shell: > 
+    openstack role create user {{auth_options}}
+
+- name: Add demo to user role
+  shell: >
+    openstack role add --project demo --user demo user {{auth_options}}
+
+
+- name: Remove admin_token_auth from /etc/keystone/keystone-paste.ini
+  shell: >
+    sed  '/\[pipeline:public_api\]/,$s/admin_token_auth//' -i  /etc/keystone/keystone-paste.ini

@@ -1,0 +1,87 @@
+- name: Install Chrony
+  apt: pkg=chrony update_cache=yes cache_valid_time=3600
+
+
+- name: Restart chorny
+  service:
+    name: chrony
+    state: restarted
+
+- name: Install software-properties-common
+  apt: name=software-properties-common state=present  update_cache=yes cache_valid_time=3600
+
+- name: Add Newton repository
+  shell:   test -e /etc/apt/sources.list.d/cloudarchive-newton.list || (add-apt-repository cloud-archive:newton -y)
+  sudo: True
+  changed_when: False     
+
+- name: apt update
+  apt: update_cache=yes
+    
+- name: apt dist-upgrade
+  apt: upgrade=dist
+
+
+- name: Install python-openstackclient
+  apt: name=python-openstackclient state=present
+
+- name: install mariadb-server python-pymysql
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - mariadb-server
+    - python-pymysql
+  sudo: True
+
+- name: copy config file
+  copy: >
+    src=99-openstack.cnf dest=/etc/mysql/mariadb.conf.d/99-openstack.cnf
+  sudo: True
+
+- name: Restart MariaDB
+  service: name=mysql state=restarted
+
+- name: Install the Python MySQLB module
+  pip: name=MySQL-python
+    
+- name: Sets mysql's root password 
+  mysql_user: user=root password={{mysql_root_password}} host=%
+  sudo: True
+    
+- name: Disable anonymous users 
+  mysql_user: name='' host={{item}} state=absent
+  with_items:
+    - localhost
+    - "{{inventory_hostname}}"
+
+
+- name: Remove test database
+  mysql_db: name=test state=absent
+- name: Test variable
+  debug: msg="{{inventory_hostname}}"
+
+- name: Install Rebbitmq server
+  apt: name=rabbitmq-server state=present update_cache=yes cache_valid_time=3600 
+
+- name: create rabbitmq admin user
+  rabbitmq_user:
+    user: "{{rabbitmq_admin}}"
+    password: "{{rabbitmq_admin_password}}"
+    vhost: /
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+
+- name: install  memcached python-memcache
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+    - memcached
+    - python-memcache
+
+- name: replace memcached.conf
+  template:
+    src:  memcached.conf.j2
+    dest: /etc/memcached.conf
+
+- name: restart memcached
+  service: name=memcached state=restarted
