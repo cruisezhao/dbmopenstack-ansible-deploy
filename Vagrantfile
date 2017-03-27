@@ -36,7 +36,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "controller" do |controller|
     controller.vm.box = "bento/ubuntu-16.04"
     controller.vm.hostname = "controller"
-    controller.vm.network "forwarded_port", guest: 80, host: 8081     
     controller.vm.network "forwarded_port", guest: 22, host: 2201 
     controller.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true	  
     controller.vm.network "private_network", ip: "10.0.0.11"
