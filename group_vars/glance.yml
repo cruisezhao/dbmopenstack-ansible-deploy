@@ -1,0 +1,7 @@
+---
+glance_db_user: glance
+glance_db_password: Data8ase-mart
+glance_db: glance
+
+glance_user: glance
+glance_password: Data8ase-mart

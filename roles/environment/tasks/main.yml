@@ -1,0 +1,62 @@
+---
+- name: modify /etc/hosts
+  shell: >
+         cat /etc/hosts | grep controller && sed -i '/controller/s/.*/{{controller_ip}} controller/' /etc/hosts || echo "{{controller_ip}} controller" >> /etc/hosts ;
+         cat /etc/hosts | grep network && sed -i '/network/s/.*/{{network_ip}} network/' /etc/hosts || echo "{{network_ip}} network" >> /etc/hosts ;
+         cat /etc/hosts | grep compute && sed -i '/compute/s/.*/{{compute_ip}} compute/' /etc/hosts || echo "{{compute_ip}} compute" >> /etc/hosts ;
+- name: Update the repository cache
+  apt: update_cache=yes
+- name: install debian-archive-keyring
+  apt: name=debian-archive-keyring state=present
+- name: install chrony
+  apt: name=chrony state=present
+- name: modify /etc/chrony/chrony.conf
+  template: src=chrony.conf dest=/etc/chrony/chrony.conf
+  notify:
+    - restart chrony
+  tags:
+    - chrony
+- name: install software-properties-common
+  apt: name=software-properties-common state=present
+- name: add "cloud-archive:newton" repository
+  apt_repository: repo='deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/newton main' state=present filename='cloudarchive-newton'
+- name: upgrade all packages
+  apt: upgrade=dist force=yes
+- name: install python-openstackclient
+  apt: name=python-openstackclient state=present force=yes
+#############################difference in controller#########################
+- name: set var node_type
+  set_fact:
+    node_type: "other_type"
+  when: node_type is not defined or node_type != "controller"
+- name: install mariadb-server python-pymysql rabbitmq-server memcached python-memcache apache2   
+  apt: name="{{item}}" state=present
+  when: node_type == "controller"
+  with_items:
+    - mariadb-server
+    - python-pymysql
+    - rabbitmq-server
+    - memcached
+    - python-memcache
+    - apache2
+- name: add rabbitmq user and config privileges
+  rabbitmq_user:
+    user: "{{rabbit_user}}"
+    password: "{{rabbit_passwd}}"
+    vhost: /
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+  when: node_type == "controller"
+- name: modify /etc/mysql/mariadb.conf.d/99-openstack.cnf
+  template: src=99-openstack.cnf dest=/etc/mysql/mariadb.conf.d/99-openstack.cnf
+  when: node_type == "controller"
+  notify: 
+    - restart mariadb
+- name: modify /etc/memcached.conf
+  template: src=memcached.conf dest=/etc/memcached.conf
+  when: node_type == "controller"
+  notify: restart memcached
+#- name: reboot
+#  command: reboot
