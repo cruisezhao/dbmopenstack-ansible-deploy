@@ -19,24 +19,24 @@ ifconfig enp0s8 down
 ifconfig enp0s8 up
 SCRIPT
 
-$hosts_sh= <<SCRIPT
+$script3 = <<SCRIPT
 echo "10.0.0.11 controller
 10.0.0.21 network
-10.0.0.31 compute01" >> /etc/hosts
+10.0.0.31 compute" >> /etc/hosts
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
-  config.ssh.insert_key = false
-  #config.vm.provision "file", source: "/root/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
-  #config.vm.provision "shell", inline: $script1
-  #config.vm.boot_timeout = 1000
-  config.vm.provision "shell", inline: $hosts_sh
+  #config.ssh.insert_key = false
+  config.vm.provision "file", source: "/root/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
+  config.vm.provision "shell", inline: $script1
+  config.vm.provision "shell", inline: $script3
+  config.vm.boot_timeout = 1000
+  config.vm.synced_folder '.', '/vagrant', disabled: true
 
   config.vm.define "controller" do |controller|
     controller.vm.box = "bento/ubuntu-16.04"
     controller.vm.hostname = "controller"
-    controller.vm.network "forwarded_port", guest: 22, host: 2201 
     controller.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true	  
     controller.vm.network "private_network", ip: "10.0.0.11"
     controller.vm.network "private_network", ip: "192.168.100.11"
@@ -49,9 +49,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "network" do |network|
     network.vm.box = "bento/ubuntu-16.04"
     network.vm.hostname = "network"
-    network.vm.network "forwarded_port", guest: 80, host: 8082
-    network.vm.network "forwarded_port", guest: 22, host: 2202 
-    network.vm.boot_timeout = 600
+	network.vm.boot_timeout = 600
     network.vm.provision "shell", inline: $script2
     network.vm.network "private_network", type: "dhcp", auto_config: false	
     network.vm.network "private_network", ip: "10.0.0.21"
@@ -62,12 +60,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  config.vm.define "compute01" do |compute|
+  config.vm.define "compute" do |compute|
     compute.vm.box = "bento/ubuntu-16.04"
-    compute.vm.hostname = "compute01"	
-    compute.vm.network "forwarded_port", guest: 80, host: 8083
-    compute.vm.network "forwarded_port", guest: 22, host: 2203 
-    compute.vm.boot_timeout = 600
+    compute.vm.hostname = "compute"	
+	compute.vm.boot_timeout = 600
     compute.vm.provision "shell", inline: $script2
     compute.vm.network "private_network", type: "dhcp", auto_config: false	
     compute.vm.network "private_network", ip: "10.0.0.31"
@@ -90,7 +86,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       v.memory = 8192
       v.cpus = 4
-      v.customize ['storageattach', :id, '--storagectl', 'SATA controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph01]
+      v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph01]
     end
   end
 
@@ -106,7 +102,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       v.memory = 8192
       v.cpus = 4
-      v.customize ['storageattach', :id, '--storagectl', 'SATA controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph02]
+      v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph02]
     end
   end
 
@@ -122,7 +118,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       v.memory = 8192
       v.cpus = 4
-      v.customize ['storageattach', :id, '--storagectl', 'SATA controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph03]
+      v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph03]
     end
   end
 
@@ -138,7 +134,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       v.memory = 8192
       v.cpus = 4
-      v.customize ['storageattach', :id, '--storagectl', 'SATA controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph04]
+      v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_ceph04]
     end
   end
+
 end
