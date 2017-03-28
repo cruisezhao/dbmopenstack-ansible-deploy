@@ -1,5 +1,7 @@
 ---
 TestVar1 : TestVarValue
+openstack_version: newton
+chrony_net: 10.0.0/24
 controller_management_ip : 10.0.0.11
 mysql_root : root
 mysql_root_password : Data8ase-mart
