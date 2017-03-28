@@ -1,0 +1,70 @@
+    - name: create glance database
+      mysql_db: name=glance state=present
+
+    - name: ceate glance db user
+      mysql_user: name=glance password={{glance_db_password}} priv=glance.*:ALL host=% state=present
+
+    - name: ceate glance db user
+      mysql_user: name=glance password={{glance_db_password}} priv=glance.*:ALL host=localhost state=present
+
+    - name: Create Glance service
+      shell: |
+          . /root/admin-openrc;
+          openstack service list|grep glance || (openstack service create --name glance --description "OpenStack Image" image;)
+      changed_when: False
+
+
+    - name: Create user,project
+      shell: |
+         . /root/admin-openrc;
+         openstack user create --domain default --password {{glance_db_password}} glance;
+         openstack role add --project service --user glance admin;
+
+    - name: Create glance endpoint
+      shell: |
+         . /root/admin-openrc;
+         openstack endpoint list|grep glance || ( openstack endpoint create --region RegionOne image public http://controller:9292;
+         openstack endpoint create --region RegionOne image internal http://controller:9292;
+         openstack endpoint create --region RegionOne image admin http://controller:9292;)
+      changed_when: False
+  
+    - name: Install glance
+      apt: name=glance
+
+    - name: Replace glance-api conf
+      template: src=templates/glance-api.conf.j2 dest=/etc/glance/glance-api.conf
+
+    - name: Modify glance-api conf
+      shell: |
+        sed -i "s/glance_password/{{glance_password}}/g" /etc/glance/glance-api.conf
+        sed -i "s/glance_db_password/{{glance_db_password}}/g" /etc/glance/glance-api.conf
+
+    - name: Modify glance-registry conf
+      template: src=templates/glance-registry.conf.j2 dest=/etc/glance/glance-registry.conf
+
+    - name: Modify glance-registry conf
+      shell: |
+        sed -i "s/glance_password/{{glance_password}}/g" /etc/glance/glance-registry.conf
+        sed -i "s/glance_db_password/{{glance_db_password}}/g" /etc/glance/glance-registry.conf
+      
+    - name: Glance db_sync
+      shell: su -s /bin/sh -c "glance-manage db_sync" glance
+
+    - name: Resteart glance-api and glance-registry service
+      service:
+        name: "{{ item }}" 
+        state: restarted
+        enabled: true
+      with_items:
+        - glance-api
+        - glance-registry
+
+    - name: Wget cirros
+      shell: test -e /root/cirros-0.3.4-x86_64-disk.img || (wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img)
+      changed_when: False
+
+    - name: Create Image
+      shell: |
+         .  /root/admin-openrc
+         openstack image list|grep cirros || (openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public)
+      changed_when: False
