@@ -1,0 +1,21 @@
+---
+- name: Update the repository cache
+  apt: update_cache=yes
+- name: install debian-archive-keyring
+  apt: name=debian-archive-keyring state=present
+- name: install chrony
+  apt: name=chrony state=present
+- name: modify /etc/chrony/chrony.conf
+  template: src=chrony.conf dest=/etc/chrony/chrony.conf
+  notify:
+    - restart chrony
+  tags:
+    - chrony
+- name: install software-properties-common
+  apt: name=software-properties-common state=present
+- name: add "cloud-archive:{{openstack_version}}" repository
+  apt_repository: repo='deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/{{openstack_version}} main' state=present filename='cloudarchive-{{openstack_version}}'
+- name: upgrade all packages
+  apt: upgrade=dist force=yes
+- name: install python-openstackclient
+  apt: name=python-openstackclient state=present force=yes

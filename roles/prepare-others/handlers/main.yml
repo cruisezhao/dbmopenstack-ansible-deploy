@@ -1,0 +1,4 @@
+---
+# handlers file for environment
+- name: restart chrony
+  service: name=chrony state=restarted
