@@ -1,0 +1,6 @@
+---
+- hosts: controller
+  roles:
+    - role: prepare-controller
+    - role: keystone
+
