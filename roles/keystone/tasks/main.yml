@@ -1,3 +1,9 @@
+- name: Create log director
+  file:
+    path: /var/log/keystone_installation
+    state: directory
+    mode: 0666
+
 - name: Create keystone database
   mysql_db: name=keystone state=present
 
@@ -19,11 +25,18 @@
   args:
     executable: /bin/sh
 
+- name: Test if keystone bootstarapped
+  stat: path=/var/log/keystone_installation/.keystone_bootstrapped
+  register: bootstrap
+    
 - name: bootstrap keystone
   raw: >         
     keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone;
     keystone-manage credential_setup --keystone-user keystone --keystone-group keystone;
-    keystone-manage bootstrap --bootstrap-password {{os_admin_password}} --bootstrap-admin-url http://controller:35357/v3/ --bootstrap-internal-url http://controller:35357/v3/ --bootstrap-public-url http://controller:5000/v3/ --bootstrap-region-id RegionOne
+    keystone-manage bootstrap --bootstrap-password {{os_admin_password}} --bootstrap-admin-url http://controller:35357/v3/ --bootstrap-internal-url http://controller:35357/v3/ --bootstrap-public-url http://controller:5000/v3/ --bootstrap-region-id RegionOne;
+    touch /var/log/keystone_installation/.keystone_bootstrapped
+  when: bootstrap.stat.exists ==false
+
     
 - name: Add servername to apache2.conf
   lineinfile:
@@ -43,27 +56,62 @@
     path: /var/lib/keystone/keystone.db
     state: absent
 
+
+- name: Test if service project created
+  stat: path=/var/log/keystone_installation/.service_project_created
+  register: service_project
+    
+
 - name: Create Service  project
   shell: >
-    openstack project create --domain default  {{auth_options}} --description 'Service Project' service 
-  ignore_errors: True
+    openstack project create --domain default  {{auth_options}} --description 'Service Project' service ;
+    touch /var/log/keystone_installation/.service_project_created
+  when: service_project.stat.exists ==false
+
+
+- name: Test if demo  project created
+  stat: path=/var/log/keystone_installation/.demo_project_created
+  register: demo_project
 
 - name: Create demo  project
   shell: >
-    openstack project create --domain default --description 'Demo Project' demo {{auth_options}}
-  ignore_errors: True
+    openstack project create --domain default --description 'Demo Project' demo {{auth_options}};
+    touch /var/log/keystone_installation/.demo_project_created
+  when: demo_project.stat.exists ==false
 
+- name: Test if demo user created
+  stat: path=/var/log/keystone_installation/.demo_user_created
+  register: demo_user
+    
 - name: Create demo user
   shell: >
-    openstack user create --domain default --password {{demo_password}} demo {{auth_options}}
+    openstack user create --domain default --password {{demo_password}} demo {{auth_options}};
+    touch /var/log/keystone_installation/.demo_user_created
+  when: demo_user.stat.exists ==false 
+
+
+- name: Test user role
+  stat: path=/var/log/keystone_installation/.user_role_created
+  register: role_user
 
 - name: Create role user
   shell: > 
-    openstack role create user {{auth_options}}
+    openstack role create user {{auth_options}};
+    touch /var/log/keystone_installation/.user_role_created
+  when: role_user.stat.exists ==false 
+
+
+- name: Test demo of user role
+  stat: path=/var/log/keystone_installation/.demo_user_role
+  register: demo_role_user
+
 
 - name: Add demo to user role
   shell: >
-    openstack role add --project demo --user demo user {{auth_options}}
+    openstack role add --project demo --user demo user {{auth_options}} ;
+    touch /var/log/keystone_installation/.demo_user_role
+  sudo: True
+  when: demo_role_user.stat.exists ==false
 
 
 - name: Remove admin_token_auth from /etc/keystone/keystone-paste.ini
