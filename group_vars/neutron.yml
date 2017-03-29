@@ -1,0 +1,6 @@
+neutron_db_server: 10.0.0.11
+neutron_db: neutron
+neutron_db_user: neutron
+neutron_db_password: Data8ase-mart
+os_neutron_user: neutron
+os_neutron_password: Data8ase-mart
