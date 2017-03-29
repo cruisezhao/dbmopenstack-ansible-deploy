@@ -12,9 +12,12 @@
   register: restart_chrony
 - name: install software-properties-common
   apt: name=software-properties-common state=present
+- name: stat /etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
+  stat: path=/etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
+  register: list_stat
 - name: add "cloud-archive:{{openstack_version}}" repository
-#  apt_repository: repo='deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/{{openstack_version}} main' state=present filename='cloudarchive-{{openstack_version}}'
-  shell:   test -e /etc/apt/sources.list.d/cloudarchive-newton.list || (add-apt-repository cloud-archive:newton -y)
+  shell: add-apt-repository cloud-archive:{{openstack_version}} -y
+  when: list_stat.stat.exists == false
 - name: upgrade all packages
   apt: upgrade=dist force=yes
 - name: install python-openstackclient
