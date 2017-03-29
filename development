@@ -8,13 +8,14 @@ compute01 ansible_ssh_host=10.0.0.31 #ansible_ssh_port=2203
 controller
 
 [glance]
+controller
 
 [nova-server]
 controller
 
 [nova]
 
-[neutron-server]
+[neutron]
 controller
 
 [neutron-network]

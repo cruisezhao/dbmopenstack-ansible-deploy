@@ -28,6 +28,8 @@
     - memcached
     - python-memcache
     - apache2
+- name: Install the Python MySQLB module   
+  pip: name=MySQL-python
 - name: add rabbitmq user and config privileges
   rabbitmq_user:
     user: "{{rabbitmq_admin}}"
