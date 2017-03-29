@@ -28,7 +28,6 @@ controller
 [cinder]
 
 [heat-server]
-controller
 
 [heat]
 
