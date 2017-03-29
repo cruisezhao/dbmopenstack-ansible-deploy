@@ -1,6 +1,10 @@
 ---
-- name: Update the repository cache
-  apt: update_cache=yes
+- name: install python
+  raw: >
+       apt-get -y update ;
+       apt-get -y install python
+#- name: Update the repository cache
+#  apt: update_cache=yes
 - name: install debian-archive-keyring
   apt: name=debian-archive-keyring state=present
 - name: install chrony
@@ -22,12 +26,27 @@
 - name: install mariadb-server python-pymysql rabbitmq-server memcached python-memcache apache2   
   apt: name="{{item}}" state=present
   with_items:
+    - python-pip
+    - libmysqlclient-dev
     - mariadb-server
     - python-pymysql
     - rabbitmq-server
     - memcached
     - python-memcache
     - apache2
+- name: upgrade pip
+  shell: pip install --upgrade pip
+- name: Install the Python MySQLB module
+  pip: name=MySQL-python
+- name: Sets mysql's root password 
+  mysql_user: user=root password={{mysql_root_password}} host="{{item}}"
+  with_items:
+    - "localhost"
+    - "%"
+- name: Removes all anonymous user accounts
+  mysql_user: name='' host_all=yes state=absent
+- name: Remove test database
+  mysql_db: name=test state=absent
 - name: add rabbitmq user and config privileges
   rabbitmq_user:
     user: "{{rabbitmq_admin}}"
