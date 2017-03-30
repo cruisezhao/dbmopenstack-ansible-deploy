@@ -2,10 +2,10 @@
       mysql_db: name=glance state=present
 
     - name: ceate glance db user and grant priv
-      mysql_user: name=glance password={{glance_db_password}} priv=glance.*:ALL host={{item}} state=present
-      with_items:
-        - "%"
-        - localhost
+      mysql_user: name=glance password={{glance_db_password}} priv=glance.*:ALL host=% state=present
+    
+    - name: ceate glance db user and grant priv
+      mysql_user: name=glance password={{glance_db_password}} priv=glance.*:ALL host=localhost state=present
 
     - name: Create Glance service
       shell: |
