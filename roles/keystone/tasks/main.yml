@@ -15,7 +15,7 @@
   mysql_user: name=keystone password={{keystone_db_password}} priv=keystone.*:ALL host=controller state=present
 
 - name: Install keystone
-  apt: pkg=keystone update_cache=yes cache_valid_time=3600
+  apt: pkg=keystone update_cache=yes cache_valid_time=3600 force=yes
 
 - name: replace keytone.conf
   template: src=keystone.conf.j2 dest=/etc/keystone/keystone.conf
