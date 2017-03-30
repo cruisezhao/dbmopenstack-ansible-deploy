@@ -9,23 +9,23 @@
 
     - name: Create Glance service
       shell: |
-          . /root/admin-openrc;
-          openstack service list|grep glance || (openstack service create --name glance --description "OpenStack Image" image;)
+        export {{admin_openrc}} 
+        openstack service list|grep glance || (openstack service create --name glance --description "OpenStack Image" image;)
       changed_when: False
 
 
     - name: Create user,project
       shell: |
-         . /root/admin-openrc;
-         openstack user create --domain default --password {{glance_db_password}} glance;
-         openstack role add --project service --user glance admin;
+        export {{admin_openrc}} 
+        openstack user create --domain default --password {{glance_db_password}} glance;
+        openstack role add --project service --user glance admin;
 
     - name: Create glance endpoint
       shell: |
-         . /root/admin-openrc;
-         openstack endpoint list|grep glance || ( openstack endpoint create --region RegionOne image public http://controller:9292;
-         openstack endpoint create --region RegionOne image internal http://controller:9292;
-         openstack endpoint create --region RegionOne image admin http://controller:9292;)
+        export {{admin_openrc}} 
+        openstack endpoint list|grep glance || ( openstack endpoint create --region RegionOne image public http://controller:9292;
+        openstack endpoint create --region RegionOne image internal http://controller:9292;
+        openstack endpoint create --region RegionOne image admin http://controller:9292;)
       changed_when: False
   
     - name: Install glance
@@ -65,6 +65,6 @@
 
     - name: Create Image
       shell: |
-         .  /root/admin-openrc
-         openstack image list|grep cirros || (openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public)
+        export {{admin_openrc}} 
+        openstack image list|grep cirros || (openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public)
       changed_when: False
