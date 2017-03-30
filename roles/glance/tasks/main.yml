@@ -4,7 +4,7 @@
     - name: ceate glance db user and grant priv
       mysql_user: name=glance password={{glance_db_password}} priv=glance.*:ALL host={{item}} state=present
       with_items:
-        - %
+        - "%"
         - localhost
 
     - name: Create Glance service
