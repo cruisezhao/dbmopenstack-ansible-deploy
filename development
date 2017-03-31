@@ -28,8 +28,7 @@ controller
 
 [cinder]
 
-[heat-server]
-
 [heat]
+controller
 
 [horizon]
