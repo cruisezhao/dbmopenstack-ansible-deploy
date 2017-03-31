@@ -30,6 +30,7 @@
     - nova-consoleauth
     - nova-novncproxy
     - nova-scheduler
+- shell: cp /etc/nova/nova.conf /etc/nova/nova.conf.bak
 - name: Modify /etc/nova/nova.conf
   template: src=nova.conf dest=/etc/nova/nova.conf
 - name: Sync api_db and db
