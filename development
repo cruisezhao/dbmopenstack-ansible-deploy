@@ -10,10 +10,11 @@ controller
 [glance]
 controller
 
-[nova-server]
+[nova-controller]
 controller
 
-[nova]
+[nova-compute]
+compute01
 
 [neutron]
 controller
