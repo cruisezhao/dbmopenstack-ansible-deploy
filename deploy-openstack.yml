@@ -13,11 +13,22 @@
         - libmysqlclient-dev
       sudo: True
 
-  tasks:
-    #    - name: Test commond
-    #  command: "ping openstack.org -c 4"
+    - name: Test keystone
+      stat: path=/var/log/keystone_installation
+      register: ks_state
+
+  #  tasks:
+  #  - name: Show keystone
+  #    debug: msg={{ks_state}}
+  #   #    - name: Test commond
+  #   #  command: "ping openstack.org -c 4"
+
+
 
   roles:
-    - role: common
+    #- role: common
+    - role: prepare-controller
     - role: keystone
-
+      when: ks_state.stat.exists ==false
+      #    - role: glance
+    - role: neutron-server
