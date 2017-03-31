@@ -1,60 +1,93 @@
 ---
-  
-   - name: create cinder mysql db
-     mysql_db: name=cinder state=present
-   
-   - name: create cinder db user1
-     mysql_user: name=cinder password="{{ cinder_dbpass }}" priv=cinder.*:ALL host=% state=present
 
-   - name: create cinder db user2
-     mysql_user: name=cinder password="{{ cinder_dbpass }}" priv=cinder.*:ALL host=localhost state=present
+- name: Create log director
+  file:
+    path: /var/log/cinder_installation
+    state: directory
+    mode: 0666 
 
-   - name: create cinder user
-     raw: > 
-          source /root/admin-openrc;
-          openstack user create --domain default --password {{ cinder_userpass }} cinder
-   
-   - name: add cinder user to admin roles
-     raw: >
-         source /root/admin-openrc; 
-         openstack role add --project service --user cinder admin
+ 
+- name: create cinder mysql db
+  mysql_db: name={{cinder_db}} state=present
 
-   - name: Create the cinder and cinderv2 service
-     raw: >
-         source /root/admin-openrc;
-         openstack service create --name cinder --description "OpenStack Block Storage" volume;
-         openstack service create --name cinderv2  --description "OpenStack Block Storage" volumev2
-   
+- name: create cinder db user
+  mysql_user: name={{cinder_db_user}} password={{cinder_db_password}} priv={{cinder_db}}.*:ALL host={{item}} state=present
+  with_items:
+    - "%"
+    - localhost
 
-   - name: create cinder endpoint
-     raw: >
-         source /root/admin-openrc;
-         openstack endpoint create --region RegionOne volume public http://controller:8776/v1/%\(tenant_id\)s;
-         openstack endpoint create --region RegionOne volume internal http://controller:8776/v1/%\(tenant_id\)s;
-         openstack endpoint create --region RegionOne volume admin http://controller:8776/v1/%\(tenant_id\)s;
-         openstack endpoint create --region RegionOne volumev2 public http://controller:8776/v2/%\(tenant_id\)s;
-         openstack endpoint create --region RegionOne volumev2 internal http://controller:8776/v2/%\(tenant_id\)s;
-         openstack endpoint create --region RegionOne volumev2 admin http://controller:8776/v2/%\(tenant_id\)s
-     
+- name: check if cinder use create
+  stat: path=/var/log/cinder_installation/.cinder_user_create
+  register: cinder_user
 
-   - name: install cinder package
-     shell: apt install -y cinder-api cinder-scheduler
+- name: create cinder user
+  raw: > 
+       export {{admin_openrc}};
+       openstack user create --domain default --password {{cinder_password}} {{cinder_user}}
+  when: cinder_user.stat.exists ==false
+
+- name: check if cinder role created
+  stat: path=/var/log/cinder_installation/.cinder_role_create
+  register: cinder_role   
+  tags: tag1
+
+- name: add cinder user to admin roles
+  raw: >
+       export {{admin_openrc}}; 
+       openstack role add --project service --user cinder admin
+  when: cinder_role.stat.exists ==false
+  tags: tag2
+
+- name: check if cinder service created
+  stat: path=/var/log/cinder_installation/.cinder_service_create
+  register: cinder_service
+  tags: tag3
+
+- name: Create the cinder and cinderv2 service
+  raw: >
+       export {{admin_openrc}};
+       openstack service create --name cinder --description "OpenStack Block Storage" volume;
+       openstack service create --name cinderv2  --description "OpenStack Block Storage" volumev2
+  when: cinder_service.stat.exists ==false
+  tags: tag4
+ 
+- name: check if cinder endpoint created
+  stat: path=/var/log/cinder_installation/.cinder_endpoint_create
+  register: cinder_endpoint_create
+    
+
+- name: create cinder endpoint
+  raw: >
+       export {{admin_openrc}};
+       openstack endpoint create --region RegionOne volume public http://controller:8776/v1/%\(tenant_id\)s;
+       openstack endpoint create --region RegionOne volume internal http://controller:8776/v1/%\(tenant_id\)s;
+       openstack endpoint create --region RegionOne volume admin http://controller:8776/v1/%\(tenant_id\)s;
+       openstack endpoint create --region RegionOne volumev2 public http://controller:8776/v2/%\(tenant_id\)s;
+       openstack endpoint create --region RegionOne volumev2 internal http://controller:8776/v2/%\(tenant_id\)s;
+       openstack endpoint create --region RegionOne volumev2 admin http://controller:8776/v2/%\(tenant_id\)s
+  when: cinder_endpoint_create.stat.exists ==false 
+
+- name: install cinder package
+  apt: name={{item}} force=yes
+  with_items:
+    - cinder-api
+    - cinder-scheduler
 
 
-   - name: copy cinder.conf 
-     template: src=cinder.conf.j2 dest=/etc/cinder/cinder.conf
+- name: copy cinder.conf 
+  template: src=cinder.conf.j2 dest=/etc/cinder/cinder.conf
 
-   - name: Populate  cinder database
-     shell: su -s /bin/sh -c "cinder-manage db sync" cinder
+- name: Populate  cinder database
+  shell: su -s /bin/sh -c "cinder-manage db sync" cinder
 
 
-   - name: modify nova.conf
-     shell: >
+- name: modify nova.conf
+  shell: >
       [ `grep -e '^os_region_name' /etc/nova/nova.conf|wc -l` -eq 1 ] || sed -i '$a [cinder]\nos_region_name = RegionOne' /etc/nova/nova.conf
 
-   - name: restart cinder nova-api service
-     service : name={{item}} state=restarted 
-     with_items:
-       - nova-api 
-       - cinder-scheduler
-       - cinder-api
+- name: restart cinder nova-api service
+  service : name={{item}} state=restarted 
+  with_items:
+    - nova-api 
+    - cinder-scheduler
+    - cinder-api
