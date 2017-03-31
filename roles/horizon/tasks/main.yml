@@ -1,8 +1,16 @@
 ---
   - name: install dashboard package
-    command:  apt install -y openstack-dashboard     
-  
-  - name: file dashboard file 
-    copy: src=local_settings.py dest=/etc/openstack-dashboard/local_settings.py
-    notify: restart apache2
+    apt: pkg=openstack-dashboard force=yes 
+ 
+  - name: local setting file exist
+    shell: |
+        [  ! -f "/etc/openstack-dashboard/local_settings.py" ]
+    register: fileexist
+    ignore_errors: True
+    
 
+
+  - name: file dashboard file 
+    template: src=local_settings.py.j2 dest=/etc/openstack-dashboard/local_settings.py
+    notify: restart apache2
+    when: fileexist | succeeded
