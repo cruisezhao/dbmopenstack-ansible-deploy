@@ -1,0 +1,46 @@
+---
+- name: Create database nova_api
+  mysql_db: name=nova_api state=present
+- name: Create database nova
+  mysql_db: name=nova state=present
+- name: Create database user nova and grant all privileges on database "nova" to user "nova"
+  mysql_user: name=nova password={{nova_db_password}} priv=nova.*:ALL host={{item}} state=present
+  with_items:
+    - "localhost"
+    - "%"
+- name: Crant all privileges on database "nova_api" to user "nova"
+  mysql_user: name=nova password={{nova_db_password}} append_privs=yes priv=nova_api.*:ALL host={{item}} state=present
+  with_items:
+    - "localhost"
+    - "%"
+- name: Create nova user on keystone
+  shell: >
+         openstack user list | grep nova || openstack user create --domain default --password {{nova_password}} nova && openstack role add --project service --user nova admin ;
+         openstack service list |grep compute || openstack service create --name nova --description "OpenStack Compute" compute ;
+- name: Create nova endpoint
+  shell: >
+         openstack endpoint list |grep 'nova.*public' || openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%\(tenant_id\)s ;
+         openstack endpoint list |grep 'nova.*internal' || openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s ;
+         openstack endpoint list |grep 'nova.*admin' || openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s ;
+- name: Install nova-api nova-conductor nova-consoleauth nova-novncproxy nova-scheduler
+  apt: name={{item}} state=present
+  with_items:
+    - nova-api
+    - nova-conductor
+    - nova-consoleauth
+    - nova-novncproxy
+    - nova-scheduler
+- name: Modify /etc/nova/nova.conf
+  template: src=nova.conf dest=/etc/nova/nova.conf
+- name: Sync api_db and db
+  shell: >
+         su -s /bin/sh -c "nova-manage api_db sync" nova ;
+         su -s /bin/sh -c "nova-manage db sync" nova ;
+- name: Restart nova-api nova-consoleauth nova-scheduler nova-conductor nova-novncproxy
+  service: name={{item}} state=restarted
+  with_items:
+    - nova-api
+    - nova-consoleauth
+    - nova-scheduler
+    - nova-conductor
+    - nova-novncproxy

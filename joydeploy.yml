@@ -1,6 +1,8 @@
 ---
 - hosts: controller
+  remote_user: root
+  gather_facts: False
   roles:
     - role: prepare-controller
     - role: keystone
-
+    - role: glance

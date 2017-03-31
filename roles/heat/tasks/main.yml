@@ -1,61 +1,60 @@
     - name: create heat database
       mysql_db: name=heat state=present
 
-    - name: create heat db user
-      mysql_user: name=heat password={{heat_db_password}} priv=heat.*:ALL host=% state=present
-
-    - name: ceate heat db user
-      mysql_user: name=heat password={{heat_db_password}} priv=heat.*:ALL host=localhost state=present
+    - name: create heat db user and grant priv
+      mysql_user: name=heat password={{heat_db_password}} priv=heat.*:ALL host={{item}} state=present
+      with_items:
+        - "%"
+        - localhost
 
     - name: Create heat service
       shell: |
-          . /root/admin-openrc;
-          openstack service list|grep heat || (openstack service create --name heat --description "Orchestration" orchestration;)
+        export {{admin_openrc}};
+        openstack service list|grep heat || (openstack service create --name heat --description "Orchestration" orchestration;)
       changed_when: False
 
     - name: Create heat-cfn service
       shell: |
-          . /root/admin-openrc;
-          openstack service list|grep cloudformation || (openstack service create --name heat-cnf --description "Orchestrtion" cloudformation;)
+        export {{admin_openrc}};
+        openstack service list|grep cloudformation || (openstack service create --name heat-cnf --description "Orchestrtion" cloudformation;)
       changed_when: False
 
-
-    - name: Create user,project,endpoint
+    - name: Create user,endpoint and add role
       shell: |
-         . /root/admin-openrc;
-         openstack user create --domain default --password {{heat_password}} heat;
-         openstack role add --project service --user heat admin;
-         openstack endpoint list | grep orchestration | grep public || openstack endpoint create --region RegionOne orchestration public http://controller:8004/v1/%\(tenant_id\)s;
-         openstack endpoint list | grep orchestration | grep internal || openstack endpoint create --region RegionOne orchestration internal http://controller:8004/v1/%\(tenant_id\)s;
-         openstack endpoint list | grep orchestration | grep admin || openstack endpoint create --region RegionOne orchestration admin http://controller:8004/v1/%\(tenant_id\)s;
-         openstack endpoint list | grep cloudformation | grep public || openstack endpoint create --region RegionOne cloudformation public http://controller:8000/v1;
-         openstack endpoint list | grep cloudformation | grep internal || openstack endpoint create --region RegionOne cloudformation internal http://controller:8000/v1;
-         openstack endpoint list | grep cloudformation | grep admin || openstack endpoint create --region RegionOne cloudformation admin http://controller:8000/v1;
+        export {{admin_openrc}};
+        openstack user create --domain default --password {{heat_password}} heat;
+        openstack role add --project service --user heat admin;
+        openstack endpoint list | grep orchestration | grep public || openstack endpoint create --region RegionOne orchestration public http://controller:8004/v1/%\(tenant_id\)s;
+        openstack endpoint list | grep orchestration | grep internal || openstack endpoint create --region RegionOne orchestration internal http://controller:8004/v1/%\(tenant_id\)s;
+        openstack endpoint list | grep orchestration | grep admin || openstack endpoint create --region RegionOne orchestration admin http://controller:8004/v1/%\(tenant_id\)s;
+        openstack endpoint list | grep cloudformation | grep public || openstack endpoint create --region RegionOne cloudformation public http://controller:8000/v1;
+        openstack endpoint list | grep cloudformation | grep internal || openstack endpoint create --region RegionOne cloudformation internal http://controller:8000/v1;
+        openstack endpoint list | grep cloudformation | grep admin || openstack endpoint create --region RegionOne cloudformation admin http://controller:8000/v1;
       changed_when: False
 
     - name: Create heat domain
       shell: |
-         . /root/admin-openrc;
-         openstack domain list|grep heat || (openstack domain create --description "Stack projects and users" heat)
+        export {{admin_openrc}};
+        openstack domain list|grep heat || (openstack domain create --description "Stack projects and users" heat)
       changed_when: False
 
     - name: Create heat_domain_admin
       shell: |
-         . /root/admin-openrc;
-         openstack user create --domain heat --password {{heat_password}} heat_domain_admin;
-         openstack role add --domain heat --user-domain heat --user heat_domain_admin admin
+        export {{admin_openrc}};
+        openstack user create --domain heat --password {{heat_password}} heat_domain_admin;
+        openstack role add --domain heat --user-domain heat --user heat_domain_admin admin
 
     - name: Create heat_stack_owner role
       shell: |
-         . /root/admin-openrc;
-         openstack role list |grep 'heat_stack_owner' || openstack role create heat_stack_owner;
-         openstack role add --project demo --user demo heat_stack_owner
+        export {{admin_openrc}};
+        openstack role list |grep 'heat_stack_owner' || openstack role create heat_stack_owner;
+        openstack role add --project demo --user demo heat_stack_owner
       changed_when: False
 
     - name: Create heat_stack_user role
       shell: |
-          . /root/admin-openrc;
-          openstack role list |grep 'heat_stack_user' || openstack role create heat_stack_user
+        export {{admin_openrc}};
+        openstack role list |grep 'heat_stack_user' || openstack role create heat_stack_user
       changed_when: False
 
     - name: Install heat
@@ -72,10 +71,11 @@
 
     - name: Modify heat file
       shell: |
-            sed -i "s/rabbitmq_user/{{rabbitmq_user}}/g" /etc/heat/heat.conf;
-            sed -i "s/rabbitmq_password/{{rabbitmq_password}}/g" /etc/heat/heat.conf;
-            sed -i "s/heat_password/{{heat_password}}/g" /etc/heat/heat.conf
-            sed -i "s/heat_db_password/{{heat_db_password}}/g" /etc/heat/heat.conf
+        sed -i "s/rabbitmq_admin/{{rabbitmq_admin}}/g" /etc/heat/heat.conf;
+        sed -i "s/rabbitmq_password/{{rabbitmq_admin_password}}/g" /etc/heat/heat.conf;
+        sed -i "s/heat_password/{{heat_password}}/g" /etc/heat/heat.conf
+        sed -i "s/heat_db_password/{{heat_db_password}}/g" /etc/heat/heat.conf
+        sed -i "s/heat_domain_admin_password/{{heat_domain_admin_password}}/g" /etc/heat/heat.conf
 
     - name: Populate heat db
       shell: su -s /bin/sh -c "heat-manage db_sync" heat

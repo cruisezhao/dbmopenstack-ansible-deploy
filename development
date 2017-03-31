@@ -10,11 +10,11 @@ controller
 [glance]
 controller
 
-[nova-server]
+[nova-controller]
 controller
 
-[nova]
-controller
+[nova-compute]
+compute01
 
 [neutron]
 controller
@@ -28,8 +28,7 @@ controller
 
 [cinder]
 
-[heat-server]
-
 [heat]
+controller
 
 [horizon]
