@@ -19,11 +19,18 @@
 
 - name: replace keytone.conf
   template: src=keystone.conf.j2 dest=/etc/keystone/keystone.conf
+
+- name: Test if service project created
+  stat: path=/var/log/keystone_installation/.db_synched
+  register: db_synched
+    
+
 - name: sync keystone db
-  #raw:  '"keystone-manage db_sync" keystone'
-  raw:  su -s /bin/sh -c "keystone-manage db_sync" keystone 
+  raw: >
+    su -s /bin/sh -c "keystone-manage db_sync" keystone && touch /var/log/keystone_installation/.db_synched
   args:
     executable: /bin/sh
+  when: db_synched.stat.exists ==false
 
 - name: Test if keystone bootstarapped
   stat: path=/var/log/keystone_installation/.keystone_bootstrapped
@@ -115,5 +122,11 @@
 
 
 - name: Remove admin_token_auth from /etc/keystone/keystone-paste.ini
+  copy:
+    src: keystone-paste.ini
+    dest: /etc/keystone/keystone-paste.ini
+    #sed  '/\[pipeline:public_api\]/,$s/admin_token_auth//' -i  /etc/keystone/keystone-paste.ini
+    #
+- name: Flag keystone deployed
   shell: >
-    sed  '/\[pipeline:public_api\]/,$s/admin_token_auth//' -i  /etc/keystone/keystone-paste.ini
+    touch /var/log/keystone_installation/.keystone_ready

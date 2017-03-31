@@ -27,7 +27,7 @@ SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use the same key for each machine
-  #config.ssh.insert_key = false
+  config.ssh.insert_key = false
   config.vm.provision "file", source: "/root/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
   config.vm.provision "shell", inline: $script1
   config.vm.provision "shell", inline: $script3

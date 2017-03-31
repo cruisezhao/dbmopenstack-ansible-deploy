@@ -1,19 +1,24 @@
 ---
-TestVar1 : TestVarValue
 openstack_version: newton
-chrony_net: 10.0.0/24
+chrony_net: 10.0.0.0/24
 controller_management_ip : 10.0.0.11
 mysql_root : root
 mysql_root_password : Data8ase-mart
 db_ip : "{{controller_management_ip}}"
+
+rabbitmq_server: "{{controller_management_ip}}"
 rabbitmq_admin : openstack
 rabbitmq_admin_password : Data8ase-mart
+
+nova_db_password: Data8ase-mart
+nova_password: Data8ase-mart
 
 os_admin : admin
 os_admin_password : Data8ase-mart
 os_url: "http://controller:35357/v3"
 os_region: RegionOne
 
+admin_openrc: "OS_PROJECT_DOMAIN_NAME=default OS_USER_DOMAIN_NAME=default OS_PROJECT_NAME=admin OS_USERNAME=admin OS_PASSWORD={{os_admin_password}} OS_AUTH_URL={{os_url}} OS_IDENTITY_API_VERSION=3 OS_IMAGE_API_VERSION=2"
 
 demo_password: "{{os_admin_password}}"
 

@@ -1,0 +1,22 @@
+---
+- hosts: controller
+  gather_facts: no
+  environment:
+    OS_PROJECT_DOMAIN_NAME: Default
+    OS_USER_DOMAIN_NAME: Default
+    OS_PROJECT_NAME: admin
+    OS_USERNAME: "{{os_admin}}"
+    OS_PASSWORD: "{{os_admin_password}}"
+    OS_AUTH_URL: "{{os_url}}"
+    OS_IDENTITY_API_VERSION: 3
+    OS_IMAGE_API_VERSION: 2
+  roles:
+    - role: prepare-controller
+    - role: keystone
+    - role: glance
+    - role: nova-controller
+- hosts: compute01
+  gather_facts: no
+  roles:
+    - role: prepare-others
+    - role: nova-compute

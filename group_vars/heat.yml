@@ -2,5 +2,5 @@
 #heat_db: heat
 #heat_db_user: heat
 heat_db_password: Data8ase-mart
-
 heat_password: Data8ase-mart
+heat_domain_admin_password: Data8ase-mart
