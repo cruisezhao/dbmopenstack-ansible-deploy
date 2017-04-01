@@ -2,10 +2,9 @@
 
 - name: Create log director
   file:
-    path: /var/log/cinder_installation
+    path: /var/log/cinder_setup
     state: directory
     mode: 0666 
-
  
 - name: create cinder mysql db
   mysql_db: name={{cinder_db}} state=present
@@ -16,56 +15,38 @@
     - "%"
     - localhost
 
-- name: check if cinder use create
-  stat: path=/var/log/cinder_installation/.cinder_user_create
-  register: cinder_user
 
 - name: create cinder user
-  raw: > 
-       export {{admin_openrc}};
-       openstack user create --domain default --password {{cinder_password}} {{cinder_user}}
-  when: cinder_user.stat.exists ==false
-
-- name: check if cinder role created
-  stat: path=/var/log/cinder_installation/.cinder_role_create
-  register: cinder_role   
-  tags: tag1
-
-- name: add cinder user to admin roles
-  raw: >
-       export {{admin_openrc}}; 
+  shell: | 
+       export {{admin_openrc}}
+       [ `openstack user list |grep cinder|wc -l` -gt 0 ]|| openstack user create --domain default --password "{{cinder_password}}" "{{cinder_user}}";
        openstack role add --project service --user cinder admin
-  when: cinder_role.stat.exists ==false
-  tags: tag2
-
-- name: check if cinder service created
-  stat: path=/var/log/cinder_installation/.cinder_service_create
-  register: cinder_service
-  tags: tag3
+       
 
 - name: Create the cinder and cinderv2 service
-  raw: >
+  shell: |
        export {{admin_openrc}};
-       openstack service create --name cinder --description "OpenStack Block Storage" volume;
-       openstack service create --name cinderv2  --description "OpenStack Block Storage" volumev2
-  when: cinder_service.stat.exists ==false
-  tags: tag4
+       [ `openstack service list |grep cinder|wc -l` -gt 0 ] || openstack service create --name cinder --description "OpenStack Block Storage" volume;
+       [ `openstack service list |grep cinderv2|wc -l` -gt 0 ] || openstack service create --name cinderv2  --description "OpenStack Block Storage" volumev2
  
-- name: check if cinder endpoint created
-  stat: path=/var/log/cinder_installation/.cinder_endpoint_create
-  register: cinder_endpoint_create
     
 
 - name: create cinder endpoint
-  raw: >
+  shell: |
        export {{admin_openrc}};
-       openstack endpoint create --region RegionOne volume public http://controller:8776/v1/%\(tenant_id\)s;
+       [ `openstack endpoint list |grep cinder|wc -l` -gt 0 ] ||
+       (openstack endpoint create --region RegionOne volume public http://controller:8776/v1/%\(tenant_id\)s;
        openstack endpoint create --region RegionOne volume internal http://controller:8776/v1/%\(tenant_id\)s;
-       openstack endpoint create --region RegionOne volume admin http://controller:8776/v1/%\(tenant_id\)s;
-       openstack endpoint create --region RegionOne volumev2 public http://controller:8776/v2/%\(tenant_id\)s;
+       openstack endpoint create --region RegionOne volume admin http://controller:8776/v1/%\(tenant_id\)s)
+
+
+- name: create cinderv2 endpoint
+  shell: |
+       export {{admin_openrc}}
+       [ `openstack endpoint list |grep cinderv2|wc -l` -gt 0 ] ||
+       (openstack endpoint create --region RegionOne volumev2 public http://controller:8776/v2/%\(tenant_id\)s;
        openstack endpoint create --region RegionOne volumev2 internal http://controller:8776/v2/%\(tenant_id\)s;
-       openstack endpoint create --region RegionOne volumev2 admin http://controller:8776/v2/%\(tenant_id\)s
-  when: cinder_endpoint_create.stat.exists ==false 
+       openstack endpoint create --region RegionOne volumev2 admin http://controller:8776/v2/%\(tenant_id\)s)
 
 - name: install cinder package
   apt: name={{item}} force=yes
@@ -73,12 +54,19 @@
     - cinder-api
     - cinder-scheduler
 
-
 - name: copy cinder.conf 
   template: src=cinder.conf.j2 dest=/etc/cinder/cinder.conf
 
+- name: Test if db sync done   
+  stat: path=/var/log/cinder_setup/.cinder_db_created   
+  register: cinder_db
+
 - name: Populate  cinder database
-  shell: su -s /bin/sh -c "cinder-manage db sync" cinder
+  raw: >
+      su -s /bin/sh -c "cinder-manage db sync" cinder && touch /var/log/cinder_setup/.cinder_db_created
+  args:   
+      executable: /bin/sh
+  when: cinder_db.stat.exists ==false 
 
 
 - name: modify nova.conf

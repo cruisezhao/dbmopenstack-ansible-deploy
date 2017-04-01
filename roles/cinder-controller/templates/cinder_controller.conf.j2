@@ -5,16 +5,17 @@ iscsi_helper = tgtadm
 volume_name_template = volume-%s
 volume_group = cinder-volumes
 verbose = True
+auth_strategy = keystone
 state_path = /var/lib/cinder
 lock_path = /var/lock/cinder
 volumes_dir = /var/lib/cinder/volumes
 
 auth_strategy = keystone
-transport_url = rabbit://{{rabbitmq_admin}}:{{rabbitmq_admin_password}}@controller
-my_ip = {{controller_management_ip}}
+transport_url = rabbit://openstack:{{ rabbit_pass }}@controller
+my_ip = controller
 
 [database]
-connection = mysql+pymysql://{{cinder_db_user}}:{{cinder_db_password}}@controller/cinder
+connection = mysql+pymysql://cinder:{{ cinder_dbpass }}@controller/cinder
 
 [keystone_authtoken]
 auth_uri = http://controller:5000
@@ -24,8 +25,8 @@ auth_type = password
 project_domain_name = Default
 user_domain_name = Default
 project_name = service
-username = {{cinder_user}}
-password = {{cinder_password}}
+username = cinder
+password = {{ cinder_userpass }}
 
 [oslo_concurrency]
 lock_path = /var/lib/cinder/tmp

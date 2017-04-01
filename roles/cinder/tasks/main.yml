@@ -1,19 +1,17 @@
 ---
  
 - name: install lvm
-  shell: apt install -y lvm2
+  apt: name={{item}} force=yes
+  with_items:
+     - lvm2
+     - cinder-volume
+     - tgt
 
 - name: Create the LVM physical volume
   shell: pvcreate {{cinder_volume_device}}
  
 - name: Create the LVM volume group 
   shell: vgcreate {{cinder_volume_name}} {{cinder_volume_device}}
-
-- name: install cinder volume package
-  shell: apt install -y cinder-volume
-
-- name: install tgt package
-  shell: apt install -y tgt
 
 - name: copy cinder.conf
   template: src=cinder.conf.j2 dest=/etc/cinder/cinder.conf
