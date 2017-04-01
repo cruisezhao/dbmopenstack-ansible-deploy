@@ -13,17 +13,48 @@
   with_items:
     - "localhost"
     - "%"
+- name: Test if user "nova" already exists
+  shell: openstack user list | grep nova
+  register: nova_user
+  ignore_errors: yes
 - name: Create nova user on keystone
-  shell: openstack user list | grep nova || openstack user create --domain default --password {{nova_password}} nova
-- name: Add the admin role to the nova user
-  shell: openstack role assignment list|awk '{print $4}'|grep "`openstack user list|grep nova|awk '{print $2}'`" || openstack role add --project service --user nova admin
+  shell: openstack user create --domain default --password {{os_nova_password}} nova
+  when: nova_user|failed
+- name: Test if the admin role is already add to user "nova"
+  shell: openstack role assignment list|awk '{print $4}'|grep "`openstack user list|grep nova|awk '{print $2}'`"
+  register: admin_role
+  ignore_errors: yes
+- name: Add the admin role to user "nova"
+  shell: openstack role add --project service --user nova admin
+  when: admin_role|failed
+- name: Test if the nova service entity is already created
+  shell: openstack service list |grep compute
+  register: nova_entity
+  ignore_errors: yes
 - name: Create the nova service entity
-  shell: openstack service list |grep compute || openstack service create --name nova --description "OpenStack Compute" compute
-- name: Create nova endpoints
-  shell: >
-         openstack endpoint list |grep 'nova.*public' || openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%\(tenant_id\)s ;
-         openstack endpoint list |grep 'nova.*internal' || openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s ;
-         openstack endpoint list |grep 'nova.*admin' || openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s ;
+  shell: openstack service create --name nova --description "OpenStack Compute" compute
+  when: nova_entity|failed 
+- name: Test if nova public endpoint already exists
+  shell: openstack endpoint list |grep 'nova.*public'
+  register: nova_public_endpoint
+  ignore_errors: yes
+- name: Create nova public endpoint
+  shell: openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%\(tenant_id\)s
+  when: nova_public_endpoint|failed
+- name: Test if nova internal endpoint already exists
+  shell: openstack endpoint list |grep 'nova.*internal'
+  register: nova_internal_endpoint
+  ignore_errors: yes
+- name: Create nova internal endpoint
+  shell: openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s
+  when: nova_internal_endpoint|failed
+- name: Test if nova admin endpoint already exists
+  shell: openstack endpoint list |grep 'nova.*admin'
+  register: nova_admin_endpoint
+  ignore_errors: yes
+- name: Create nova admin endpoint
+  shell: openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s
+  when: nova_admin_endpoint|failed
 - name: Update repository
   apt: update_cache=yes
 - name: Install nova-api nova-conductor nova-consoleauth nova-novncproxy nova-scheduler
@@ -34,14 +65,18 @@
     - nova-consoleauth
     - nova-novncproxy
     - nova-scheduler
+  register: install_nova
 - name: Modify /etc/nova/nova.conf
   template: src=nova.conf dest=/etc/nova/nova.conf
   register: if_modified
 - name: Sync api_db and db
   shell: >
-         su -s /bin/sh -c "nova-manage api_db sync" nova ;
-         su -s /bin/sh -c "nova-manage db sync" nova ;
-  when: if_modified|changed
+         nova-manage api_db sync
+         nova-manage db sync nova ;
+  become: yes
+  become_user: nova
+  become_method: su
+  when: nova_user|failed or admin_role|failed or nova_entity|failed or nova_public_endpoint|failed or nova_internal_endpoint|failed or nova_admin_endpoint|failed or install_nova|changed or if_modified|changed
 - name: Restart nova-api nova-consoleauth nova-scheduler nova-conductor nova-novncproxy
   service: name={{item}} state=restarted
   with_items:
@@ -50,4 +85,4 @@
     - nova-scheduler
     - nova-conductor
     - nova-novncproxy
-  when: if_modified|changed
+  when: nova_user|failed or admin_role|failed or nova_entity|failed or nova_public_endpoint|failed or nova_internal_endpoint|failed or nova_admin_endpoint|failed or install_nova|changed or if_modified|changed
