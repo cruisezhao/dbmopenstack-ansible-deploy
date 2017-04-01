@@ -69,14 +69,6 @@
     - name: Replace heat.conf
       template: src=templates/heat.conf.j2 dest=/etc/heat/heat.conf
 
-    - name: Modify heat file
-      shell: |
-        sed -i "s/rabbitmq_admin/{{rabbitmq_admin}}/g" /etc/heat/heat.conf;
-        sed -i "s/rabbitmq_password/{{rabbitmq_admin_password}}/g" /etc/heat/heat.conf;
-        sed -i "s/heat_password/{{heat_password}}/g" /etc/heat/heat.conf
-        sed -i "s/heat_db_password/{{heat_db_password}}/g" /etc/heat/heat.conf
-        sed -i "s/heat_domain_admin_password/{{heat_domain_admin_password}}/g" /etc/heat/heat.conf
-
     - name: Populate heat db
       shell: su -s /bin/sh -c "heat-manage db_sync" heat
 

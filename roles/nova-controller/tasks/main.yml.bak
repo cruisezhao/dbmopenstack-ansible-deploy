@@ -24,8 +24,6 @@
          openstack endpoint list |grep 'nova.*public' || openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%\(tenant_id\)s ;
          openstack endpoint list |grep 'nova.*internal' || openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s ;
          openstack endpoint list |grep 'nova.*admin' || openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s ;
-- name: Update repository
-  apt: update_cache=yes
 - name: Install nova-api nova-conductor nova-consoleauth nova-novncproxy nova-scheduler
   apt: name={{item}} state=present
   with_items:
@@ -36,12 +34,10 @@
     - nova-scheduler
 - name: Modify /etc/nova/nova.conf
   template: src=nova.conf dest=/etc/nova/nova.conf
-  register: if_modified
 - name: Sync api_db and db
   shell: >
          su -s /bin/sh -c "nova-manage api_db sync" nova ;
          su -s /bin/sh -c "nova-manage db sync" nova ;
-  when: if_modified|changed
 - name: Restart nova-api nova-consoleauth nova-scheduler nova-conductor nova-novncproxy
   service: name={{item}} state=restarted
   with_items:
@@ -50,4 +46,3 @@
     - nova-scheduler
     - nova-conductor
     - nova-novncproxy
-  when: if_modified|changed
