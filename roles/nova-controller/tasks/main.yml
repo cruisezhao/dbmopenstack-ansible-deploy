@@ -67,12 +67,12 @@
     - nova-scheduler
   register: install_nova
 - name: Modify /etc/nova/nova.conf
-  template: src=nova.conf dest=/etc/nova/nova.conf
+  template: src="../../../common-templates/controller-nova.conf" dest=/etc/nova/nova.conf
   register: if_modified
 - name: Sync api_db and db
   shell: >
-         nova-manage api_db sync
-         nova-manage db sync nova ;
+         nova-manage api_db sync ;
+         nova-manage db sync ;
   become: yes
   become_user: nova
   become_method: su
