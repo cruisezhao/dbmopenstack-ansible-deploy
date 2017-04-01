@@ -1,8 +1,8 @@
 cinder_db_user: cinder
 cinder_db_password: Data8ase-mart
 cinder_db: cinder
-cinder_user: cinder
-cinder_password: Data8ase-mart
+os_cinder_user: cinder
+os_cinder_password: Data8ase-mart
 
 cinder_volume_device: /dev/sdb
 cinder_volume_name: cinder-volumes
