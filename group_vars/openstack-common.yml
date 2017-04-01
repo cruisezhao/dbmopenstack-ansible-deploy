@@ -10,9 +10,6 @@ rabbitmq_server: "{{controller_management_ip}}"
 rabbitmq_admin : openstack
 rabbitmq_admin_password : Data8ase-mart
 
-nova_db_password: Data8ase-mart
-nova_password: Data8ase-mart
-
 os_admin : admin
 os_admin_password : Data8ase-mart
 os_url: "http://controller:35357/v3"

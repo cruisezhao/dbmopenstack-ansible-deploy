@@ -1,1 +1,4 @@
 ---
+nova_db_password: Data8ase-mart
+os_nova_user: nova
+os_nova_password: Data8ase-mart
