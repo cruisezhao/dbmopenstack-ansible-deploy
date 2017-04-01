@@ -57,6 +57,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     network.vm.provider "virtualbox" do |v|
       v.memory = 8192
       v.cpus = 4
+      v.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
     end
   end
 
@@ -71,6 +72,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     compute.vm.provider "virtualbox" do |v|
       v.memory = 8192
       v.cpus = 4
+      v.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
     end
   end
 
