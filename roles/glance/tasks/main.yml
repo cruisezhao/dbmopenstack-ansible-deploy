@@ -34,19 +34,9 @@
     - name: Replace glance-api conf
       template: src=templates/glance-api.conf.j2 dest=/etc/glance/glance-api.conf
 
-    - name: Modify glance-api conf
-      shell: |
-        sed -i "s/glance_password/{{glance_password}}/g" /etc/glance/glance-api.conf
-        sed -i "s/glance_db_password/{{glance_db_password}}/g" /etc/glance/glance-api.conf
-
-    - name: Modify glance-registry conf
+    - name: Replace glance-registry conf
       template: src=templates/glance-registry.conf.j2 dest=/etc/glance/glance-registry.conf
 
-    - name: Modify glance-registry conf
-      shell: |
-        sed -i "s/glance_password/{{glance_password}}/g" /etc/glance/glance-registry.conf
-        sed -i "s/glance_db_password/{{glance_db_password}}/g" /etc/glance/glance-registry.conf
-      
     - name: Glance db_sync
       shell: su -s /bin/sh -c "glance-manage db_sync" glance
 
