@@ -1,0 +1,6 @@
+---
+neutron_controller_server : controller
+neutron_db_server: controller
+os_neutron_user: neutron
+os_neutron_auth_server: controller
+

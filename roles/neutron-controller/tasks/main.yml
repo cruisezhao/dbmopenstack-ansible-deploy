@@ -1,0 +1,96 @@
+- name: create neutron db
+  mysql_db: name=neutron state=present
+
+
+- name: ceate keystone db user
+  mysql_user: name=neutron  password={{neutron_db_password}} priv=neutron.*:ALL host={{item}} state=present
+  with_items:
+    - "%"
+    - "localhost"
+    - "{{neutron_db_server}}"
+
+
+- name: Create neutron user
+  shell: >
+    openstack user list  --domain default {{auth_options}} -c Name | grep {{os_neutron_user}} || \
+    openstack user create --domain default  {{os_neutron_user}}  --password {{os_neutron_password}} {{auth_options}}
+
+
+- name: Assign neutron user admin role
+  shell: >
+    openstack role assignment list --user {{os_neutron_user}} --project service --names {{auth_options}} | grep {{os_neutron_user}} || \
+    openstack role add --project service --user neutron admin {{auth_options}}
+
+- name:  Create the neutron service entity
+  shell: >
+    openstack service  list {{auth_options}} | grep neutron || \
+    openstack service create --name neutron --description "OpenStack Networking" network {{auth_options}}
+
+
+- name:  openstack endpoint create --region RegionOne  network public http://{{neutron_controller_server}}:9696
+  shell: >
+    openstack endpoint list {{auth_options}} | grep "neutron.*network.*public"  || \
+    openstack endpoint create --region RegionOne network public http://{{neutron_controller_server}}:9696 {{auth_options}}
+
+- name:  openstack endpoint create --region RegionOne  network internal http://{{neutron_controller_server}}:9696
+  shell: >
+    openstack endpoint list {{auth_options}} | grep "neutron.*network.*internal"  || \
+    openstack endpoint create --region RegionOne network internal http://{{neutron_controller_server}}:9696 {{auth_options}}
+
+- name:  openstack endpoint create --region RegionOne  network admin  http://{{neutron_controller_server}}:9696
+  shell: >
+    openstack endpoint list {{auth_options}} | grep "neutron.*network.*admin"  || \
+    openstack endpoint create --region RegionOne network admin http://{{neutron_controller_server}}:9696 {{auth_options}}
+
+- name: Install neutron-server neutron-plugin-ml2 python-neutronclient 
+  apt: name={{item}} state=present  update_cache=yes cache_valid_time=3600
+  with_items:
+    - neutron-server
+    - neutron-plugin-ml2
+    - python-neutronclient 
+    ### For testing nova.conf template
+    - nova-api
+    #################################
+- name: copy file /etc/neutron/neutron.conf 
+  template:
+    src: neutron.conf.j2
+    dest: /etc/neutron/neutron.conf
+    group: neutron
+    mode: 0640
+
+- name: copy ml2_conf.ini 
+  copy:
+    src: ml2_conf.ini
+    dest: /etc/neutron/plugins/ml2/ml2_conf.ini
+    group: neutron
+
+- name: Temaplate /etc/nova/nova.conf 
+  template:
+    src: ../../../common-templates/controller-nova.conf 
+    dest: /etc/nova/nova.conf 
+    group: nova
+  sudo: True
+
+- name:  ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini 
+  file:
+    src: /etc/neutron/plugins/ml2/ml2_conf.ini
+    dest: /etc/neutron/plugin.ini
+    state: link
+- name: sync neutron db
+  raw: >
+    su -s /bin/bash neutron -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugin.ini upgrade head" 
+
+- name: systemctl start neutron-server 
+  systemd:
+    name: neutron-server
+    state: started
+
+- name: systemctl enable neutron-server 
+  systemd:
+    name: neutron-server
+    enabled: yes
+
+- name: systemctl restart nova-api 
+  systemd:
+    name: nova-api
+    state: restarted

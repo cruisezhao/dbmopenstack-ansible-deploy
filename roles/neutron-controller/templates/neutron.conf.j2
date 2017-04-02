@@ -1,0 +1,51 @@
+[DEFAULT]
+core_plugin = ml2
+service_plugins = router
+auth_strategy = keystone
+state_path = /var/lib/neutron
+dhcp_agent_notification = True
+allow_overlapping_ips = True
+notify_nova_on_port_status_changes = True
+notify_nova_on_port_data_changes = True
+rpc_backend = rabbit
+
+[agent]
+root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
+
+# Keystone auth info
+[keystone_authtoken]
+auth_uri = http://{{neutron_controller}}:5000
+auth_url = http://{{neutron_controller}}:35357
+memcached_servers = {{neutron_memcached_servers}}:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = {{os_neutron_user}}
+password = {{os_neutron_password}}
+
+# MariaDB connection info
+[database]
+connection = mysql+pymysql://{{neutron_db_user}}:{{neutron_db_password}}@{{neutron_db_server}}/{{neutron_db}}
+
+# Nova connection info
+[nova]
+auth_url = http://controller:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = {{os_nova_user}}
+password = {{os_nova_password}}
+
+[oslo_concurrency]
+lock_path = /lock
+
+# RabbitMQ connection info
+[oslo_messaging_rabbit]
+rabbit_host = {{rabbitmq_server}}
+rabbit_port = 5672
+rabbit_userid = {{rabbitmq_admin}}
+rabbit_password = {{rabbitmq_admin_password}}
+
