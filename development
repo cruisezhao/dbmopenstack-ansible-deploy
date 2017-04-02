@@ -17,6 +17,7 @@ network
 
 [neutron]
 controller
+network
 
 [neutron-network]
 
