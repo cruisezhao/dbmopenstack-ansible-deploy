@@ -1,0 +1,32 @@
+[DEFAULT]
+core_plugin = ml2
+service_plugins = router
+auth_strategy = keystone
+state_path = /var/lib/neutron
+allow_overlapping_ips = True
+rpc_backend = rabbit
+
+[agent]
+root_helper = sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
+
+# Keystone auth info
+[keystone_authtoken]
+auth_uri = http://{{neutron_controller}}:5000
+auth_url = http://{{neutron_controller}}:35357
+memcached_servers = {{neutron_memcached_servers}}:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = {{os_neutron_user}}
+password = {{os_neutron_password}}
+
+[oslo_concurrency]
+lock_path = /lock
+
+# RabbitMQ connection info
+[oslo_messaging_rabbit]
+rabbit_host = {{rabbitmq_server}}
+rabbit_port = 5672
+rabbit_userid = {{rabbitmq_admin}}
+rabbit_password = {{rabbitmq_admin_password}}
