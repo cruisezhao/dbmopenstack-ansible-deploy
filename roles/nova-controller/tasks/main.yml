@@ -75,7 +75,7 @@
          nova-manage db sync ;
   become: yes
   become_user: nova
-  become_method: su
+  become_method: sudo
   when: nova_user|failed or admin_role|failed or nova_entity|failed or nova_public_endpoint|failed or nova_internal_endpoint|failed or nova_admin_endpoint|failed or install_nova|changed or if_modified|changed
 - name: Restart nova-api nova-consoleauth nova-scheduler nova-conductor nova-novncproxy
   service: name={{item}} state=restarted
