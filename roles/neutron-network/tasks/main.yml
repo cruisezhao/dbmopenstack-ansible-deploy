@@ -34,7 +34,7 @@
     reload: yes
 
 
-- name: install neutron computnents
+- name: install neutron components
   apt: name={{item}}  update_cache=yes cache_valid_time=3600
   with_items:
     - neutron-plugin-ml2
@@ -49,24 +49,28 @@
     src: neutron.conf.j2
     dest: /etc/neutron/neutron.conf
     group: neutron
+    backup: yes
 
 - name: copy /etc/neutron/l3_agent.ini 
   copy:
     src: l3_agent.ini 
     dest: /etc/neutron/l3_agent.ini
     group: neutron
+    backup: yes
 
 - name: copy  /etc/neutron/dhcp_agent.ini 
   copy:
     src: dhcp_agent.ini
     dest: /etc/neutron/dhcp_agent.ini
     group: neutron
+    backup: yes
 
 - name: copy /etc/neutron/metadata_agent.ini
   template:
     src: metadata_agent.ini.j2
     dest: /etc/neutron/metadata_agent.in
     group: neutron
+    backup: yes
 
 
 - name: copy /etc/neutron/plugins/ml2/ml2_conf.ini 
@@ -74,6 +78,7 @@
     src: ml2_conf.ini
     dest: /etc/neutron/plugins/ml2/ml2_conf.ini
     group: neutron
+    backup: yes
 
 
 - name: ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini 
@@ -81,6 +86,27 @@
     src: /etc/neutron/plugins/ml2/ml2_conf.ini
     dest: /etc/neutron/plugin.ini
     state: link
+
+- name: Get overlay network IP
+  shell: >
+    ifconfig | awk -F "[: ]+" '/inet addr:/ { if ($4 != "127.0.0.1") print $4 }' | grep {{os_neutron_overlay_network_starts_with}}
+  register: overlay_network
+
+
+- name: test overlay_network
+  debug: msg={{overlay_network}}
+
+- name: Tempalte /etc/neutron/plugins/ml2/linuxbridge_agent.ini 
+  template:
+    src:  linuxbridge_agent.ini.j2
+    dest: /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+    backup: yes
+
+- name: Copy /etc/neutron/dnsmasq-neutron.conf 
+  copy:
+    src: dnsmasq-neutron.conf
+    dest: /etc/neutron/dnsmasq-neutron.conf
+
 
 - name: restart service; l3-agent dhcp-agent metadata-agent linuxbridge-agent
   service: "name={{item}} state=restarted"

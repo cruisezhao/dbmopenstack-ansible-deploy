@@ -27,8 +27,19 @@
 
   roles:
     #- role: common
-    - role: prepare-controller
+    #- role: prepare-controller
     - role: keystone
       when: ks_state.stat.exists ==false
       #    - role: glance
-    - role: neutron-server
+      #- role: nova-controller
+    - role: neutron-controller
+
+
+      #- name: Setup network node
+      #  hosts: network
+      #  sudo: True
+      #
+      #  roles:
+      #    - prepare-others
+      #
+- include: deploy-network.yml

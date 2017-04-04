@@ -1,0 +1,25 @@
+[DEFAULT]
+
+
+
+
+[agent]
+prevent_arp_spoofing = True 
+
+
+
+[linux_bridge]
+physical_interface_mappings = {{os_neutron_physnet}}:{{os_neutron_physnet__nic}}
+
+
+
+[securitygroup]
+
+
+
+[vxlan]
+enable_vxlan = True
+l2_population = True
+local_ip = {{overlay_network.stdout}}
+
+

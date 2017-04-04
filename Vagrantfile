@@ -22,7 +22,7 @@ SCRIPT
 $script3 = <<SCRIPT
 echo "10.0.0.11 controller
 10.0.0.21 network
-10.0.0.31 compute" >> /etc/hosts
+10.0.0.31 compute01" >> /etc/hosts
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -61,9 +61,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  config.vm.define "compute" do |compute|
+  config.vm.define "compute01" do |compute|
     compute.vm.box = "bento/ubuntu-16.04"
-    compute.vm.hostname = "compute"	
+    compute.vm.hostname = "compute01"	
 	compute.vm.boot_timeout = 600
     compute.vm.provision "shell", inline: $script2
     compute.vm.network "private_network", type: "dhcp", auto_config: false	

@@ -99,7 +99,7 @@
 
 
 [agent]
-
+prevent_arp_spoofing = True 
 #
 # From neutron.ml2.linuxbridge.agent
 #
@@ -130,7 +130,7 @@
 
 
 [linux_bridge]
-
+physical_interface_mappings = {{os_neutron_physnet}}:{{os_neutron_physnet__nic}}
 #
 # From neutron.ml2.linuxbridge.agent
 #
@@ -166,7 +166,8 @@
 
 
 [vxlan]
-
+enable_vxlan = True
+l2_population = True
 #
 # From neutron.ml2.linuxbridge.agent
 #
@@ -194,7 +195,8 @@
 # version of this value must match the value of the 'overlay_ip_version' option
 # in the ML2 plug-in configuration file on the neutron server node(s). (IP
 # address value)
-local_ip = {{os_network_server_ip}}
+#local_ip = {{os_network_server_ip}}
+local_ip = {{overlay_network.stdout}}
 
 # Extension to use alongside ml2 plugin's l2population mechanism driver. It
 # enables the plugin to populate VXLAN forwarding table. (boolean value)

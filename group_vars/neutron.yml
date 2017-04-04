@@ -9,3 +9,8 @@ neutron_controller: controller
 os_metadata_secrete: Data8ase-Secrete
 
 os_network_server_ip: 10.0.0.21
+
+os_neutron_overlay_network_starts_with: 192.168.100.
+
+os_neutron_physnet__nic: enp0s8
+os_neutron_physnet: physnet

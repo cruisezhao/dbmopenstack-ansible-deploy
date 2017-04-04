@@ -18,6 +18,7 @@ network
 [neutron]
 controller
 network
+compute01
 
 [neutron-network]
 
