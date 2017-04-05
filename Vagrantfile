@@ -14,7 +14,9 @@ SCRIPT
 
 $script2 = <<SCRIPT
 echo "auto enp0s8
-iface enp0s8 inet manual" >> /etc/network/interfaces
+iface enp0s8 inet manual
+up ip link set dev $IFACE up
+down ip link set dev $IFACE down " >> /etc/network/interfaces
 ifconfig enp0s8 down
 ifconfig enp0s8 up
 SCRIPT
@@ -38,6 +40,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     controller.vm.box = "bento/ubuntu-16.04"
     controller.vm.hostname = "controller"
     controller.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true	  
+    controller.vm.network "forwarded_port", guest: 6080, host: 16080, auto_correct: true	  
     controller.vm.network "private_network", ip: "10.0.0.11"
     controller.vm.network "private_network", ip: "192.168.100.11"
     controller.vm.provider "virtualbox" do |v|

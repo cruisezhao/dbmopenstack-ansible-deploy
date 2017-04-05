@@ -1,0 +1,19 @@
+---
+- name: Deploy neutron on compute
+  hosts: compute01
+  sudo: True
+  #  pre_tasks:
+  #    - name: Install python for Ansible
+  #      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+  #      changed_when: False
+  #    - name: Install pip
+  #      apt: pkg={{item}} state=present
+  #      with_items:
+  #        - python-pip
+  #        - libmysqlclient-dev
+  #      sudo: True
+
+  roles:
+    - role: prepare-others 
+    - role: neutron-compute
+

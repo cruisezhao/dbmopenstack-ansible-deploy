@@ -15,6 +15,7 @@
     - role: keystone
     - role: glance
     - role: nova-controller
+    - role: horizon
 - hosts: compute01
   gather_facts: no
   roles:

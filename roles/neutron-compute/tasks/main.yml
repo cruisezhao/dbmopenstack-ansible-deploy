@@ -8,6 +8,7 @@
     sysctl_set: yes
     state: present
     reload: yes
+  sudo: True
 
 
 
@@ -18,7 +19,12 @@
     sysctl_set: yes
     state: present
     reload: yes
+  sudo: True
 
+- name:
+  modprobe:
+    name: br_netfilter
+    state: present
 
 - name: echo 'net.bridge.bridge-nf-call-iptables=1' >> /etc/sysctl.conf 
   sysctl:
