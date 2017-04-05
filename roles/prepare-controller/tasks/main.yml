@@ -3,27 +3,34 @@
   raw: >
        apt-get -y update ;
        apt-get -y install python
-#- name: install debian-archive-keyring
-#  apt: name=debian-archive-keyring state=present
+
 - name: install chrony
   apt: name=chrony state=present
+
 - name: modify /etc/chrony/chrony.conf
   template: src=chrony.conf dest=/etc/chrony/chrony.conf
   register: restart_chrony
+
 - name: install software-properties-common
   apt: name=software-properties-common state=present
+
 - name: stat /etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
   stat: path=/etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
   register: list_stat
+
 - name: add "cloud-archive:{{openstack_version}}" repository
   shell: add-apt-repository cloud-archive:{{openstack_version}} -y
   when: list_stat.stat.exists == false
+
 - name: apt update   
   apt: update_cache=yes
+
 - name: upgrade all packages
   apt: upgrade=dist
+
 - name: install python-openstackclient
   apt: name=python-openstackclient state=present
+
 - name: install mariadb-server python-pymysql rabbitmq-server memcached python-memcache apache2   
   apt: name="{{item}}" state=present
   with_items:
@@ -35,19 +42,25 @@
     - memcached
     - python-memcache
     - apache2
+
 - name: upgrade pip
   shell: pip install --upgrade pip
+
 - name: Install the Python MySQLB module
   pip: name=MySQL-python
+
 - name: Sets mysql's root password 
   mysql_user: user=root password={{mysql_root_password}} host="{{item}}"
   with_items:
     - "localhost"
     - "%"
+
 - name: Removes all anonymous user accounts
   mysql_user: name='' host_all=yes state=absent
+
 - name: Remove test database
   mysql_db: name=test state=absent
+
 - name: add rabbitmq user and config privileges
   rabbitmq_user:
     user: "{{rabbitmq_admin}}"
@@ -57,18 +70,23 @@
     read_priv: .*
     write_priv: .*
     state: present
+
 - name: modify /etc/mysql/mariadb.conf.d/99-openstack.cnf
   template: src=99-openstack.cnf dest=/etc/mysql/mariadb.conf.d/99-openstack.cnf
   register: restart_mariadb
+
 - name: modify /etc/memcached.conf
   template: src=memcached.conf dest=/etc/memcached.conf
   register: restart_memcached
+
 - name: restart chrony
   service: name=chrony state=restarted
   when: restart_chrony|changed
+
 - name: restart mariadb
   service: name=mysql state=restarted
   when: restart_mariadb|changed
+
 - name: restart memcached
   service: name=memcached state=restarted
   when: restart_memcached|changed
