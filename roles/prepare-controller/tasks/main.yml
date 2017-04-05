@@ -8,7 +8,7 @@
   apt: name=chrony state=present
 
 - name: modify /etc/chrony/chrony.conf
-  template: src=chrony.conf dest=/etc/chrony/chrony.conf
+  template: src=chrony.conf dest=/etc/chrony/chrony.conf backup=yes
   register: restart_chrony
 
 - name: install software-properties-common
@@ -72,11 +72,11 @@
     state: present
 
 - name: modify /etc/mysql/mariadb.conf.d/99-openstack.cnf
-  template: src=99-openstack.cnf dest=/etc/mysql/mariadb.conf.d/99-openstack.cnf
+  template: src=99-openstack.cnf dest=/etc/mysql/mariadb.conf.d/99-openstack.cnf backup=yes
   register: restart_mariadb
 
 - name: modify /etc/memcached.conf
-  template: src=memcached.conf dest=/etc/memcached.conf
+  template: src=memcached.conf dest=/etc/memcached.conf backup=yes
   register: restart_memcached
 
 - name: restart chrony

@@ -85,7 +85,7 @@
   register: install_nova
 
 - name: Modify /etc/nova/nova.conf
-  template: src="../../../common-templates/controller-nova.conf" dest=/etc/nova/nova.conf
+  template: src="../../../common-templates/controller-nova.conf" dest=/etc/nova/nova.conf backup=yes
   register: if_modified
 
 - name: Sync api_db and db

@@ -11,7 +11,7 @@
   apt: name=chrony state=present
 
 - name: modify /etc/chrony/chrony.conf
-  template: src=chrony.conf dest=/etc/chrony/chrony.conf
+  template: src=chrony.conf dest=/etc/chrony/chrony.conf backup=yes
   register: restart_chrony
 
 - name: install software-properties-common
@@ -26,10 +26,10 @@
   when: list_stat.stat.exists == false
 
 - name: upgrade all packages
-  apt: upgrade=dist force=yes
+  apt: upgrade=dist
 
 - name: install python-openstackclient
-  apt: name=python-openstackclient state=present force=yes
+  apt: name=python-openstackclient state=present
 
 - name: restart chrony
   service: name=chrony state=restarted
