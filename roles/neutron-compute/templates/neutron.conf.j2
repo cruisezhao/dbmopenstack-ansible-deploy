@@ -22,7 +22,7 @@ username = {{os_neutron_user}}
 password = {{os_neutron_password}}
 
 [oslo_concurrency]
-lock_path = /lock
+lock_path = $state_path/lock
 
 # RabbitMQ connection info
 [oslo_messaging_rabbit]

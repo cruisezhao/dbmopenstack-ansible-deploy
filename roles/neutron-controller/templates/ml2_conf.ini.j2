@@ -1,36 +1,26 @@
 [DEFAULT]
 
 
-
 [ml2]
 type_drivers = flat,vlan,vxlan
-tenant_network_types =
+tenant_network_types = vxlan
+#tenant_network_types =
 mechanism_drivers = linuxbridge,l2population
 extension_drivers = port_security 
-
-tenant_network_types = vxlan
-
-
 
 
 [ml2_type_flat]
 flat_networks = {{os_neutron_physnet}}
 
 
-
 [ml2_type_geneve]
-
-
-
 
 
 [ml2_type_gre]
 
 
 
-
 [ml2_type_vlan]
-
 
 
 
@@ -39,11 +29,7 @@ vni_ranges = 1:1000
 
 
 
-
 [securitygroup]
-
-
-
 enable_security_group = True
 firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 enable_ipset = True 

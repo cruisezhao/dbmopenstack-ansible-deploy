@@ -40,7 +40,7 @@ username = {{os_nova_user}}
 password = {{os_nova_password}}
 
 [oslo_concurrency]
-lock_path = /lock
+lock_path = $state_path/lock
 
 # RabbitMQ connection info
 [oslo_messaging_rabbit]
