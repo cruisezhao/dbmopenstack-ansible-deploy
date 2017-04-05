@@ -6,5 +6,5 @@ heat_db_password: Data8ase-mart
 heat_password: Data8ase-mart
 heat_domain_admin_password: Data8ase-mart
 
-orchestration_service_API_endpoints: "http://controller:8004/v1/%\(tenant_id\)s"
+orchestration_service_API_endpoints: "http://controller:8004/v1/%(tenant_id)s"
 cloudformation_service_API_endpoints: "http://controller:8000/v1"

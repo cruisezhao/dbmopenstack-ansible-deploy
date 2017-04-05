@@ -19,7 +19,7 @@
 - name: create cinder user
   shell: | 
        export {{admin_openrc}}
-       [ `openstack user list |grep cinder|wc -l` -gt 0 ]|| openstack user create --domain default --password "{{cinder_password}}" "{{cinder_user}}";
+       [ `openstack user list |grep cinder|wc -l` -gt 0 ]|| openstack user create --domain default --password "{{os_cinder_password}}" "{{os_cinder_user}}";
        openstack role add --project service --user cinder admin
        
 
