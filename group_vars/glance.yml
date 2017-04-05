@@ -5,3 +5,5 @@ glance_db: glance
 
 glance_user: glance
 glance_password: Data8ase-mart
+
+image_service_API_endpoint: "http://controller:9292"
