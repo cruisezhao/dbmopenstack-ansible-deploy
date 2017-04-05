@@ -3,14 +3,11 @@
     apt: pkg=openstack-dashboard force=yes 
  
   - name: local setting file exist
-    shell: |
-        [  ! -f "/etc/openstack-dashboard/local_settings.py" ]
+    stat: path=/etc/openstack-dashboard/local_settings.py
     register: fileexist
-    ignore_errors: True
-    
-
-
+   
+  
   - name: file dashboard file 
     template: src=local_settings.py.j2 dest=/etc/openstack-dashboard/local_settings.py
     notify: restart apache2
-    when: fileexist | succeeded
+    when: fileexist.stat.exists == false
