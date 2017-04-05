@@ -16,12 +16,13 @@
     - localhost
 
 
-- name: create cinder os user
+- name: create cinder user
   shell: | 
-       export {{admin_openrc}};
-       [ `openstack user list |grep cinder|wc -l` -gt 0 ] || openstack user create --domain default --password {{os_cinder_password}} cinder;
+       export {{admin_openrc}}
+       [ `openstack user list |grep cinder|wc -l` -gt 0 ]|| openstack user create --domain default --password "{{os_cinder_password}}" "{{os_cinder_user}}";
        openstack role add --project service --user cinder admin
        
+
 - name: Create the cinder and cinderv2 service
   shell: |
        export {{admin_openrc}};
@@ -71,6 +72,7 @@
 - name: modify nova.conf
   shell: >
       [ `grep -e '^os_region_name' /etc/nova/nova.conf|wc -l` -eq 1 ] || sed -i '$a [cinder]\nos_region_name = RegionOne' /etc/nova/nova.conf
+  ignore_errors: yes
 
 - name: restart cinder nova-api service
   service : name={{item}} state=restarted 
