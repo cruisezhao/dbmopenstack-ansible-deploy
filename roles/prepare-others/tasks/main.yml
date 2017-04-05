@@ -3,25 +3,34 @@
   raw: >
        apt-get -y update ;
        apt-get -y install python
+
 - name: install debian-archive-keyring
   apt: name=debian-archive-keyring state=present
+
 - name: install chrony
   apt: name=chrony state=present
+
 - name: modify /etc/chrony/chrony.conf
   template: src=chrony.conf dest=/etc/chrony/chrony.conf
   register: restart_chrony
+
 - name: install software-properties-common
   apt: name=software-properties-common state=present
+
 - name: stat /etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
   stat: path=/etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
   register: list_stat
+
 - name: add "cloud-archive:{{openstack_version}}" repository
   shell: add-apt-repository cloud-archive:{{openstack_version}} -y
   when: list_stat.stat.exists == false
+
 - name: upgrade all packages
   apt: upgrade=dist force=yes
+
 - name: install python-openstackclient
   apt: name=python-openstackclient state=present force=yes
+
 - name: restart chrony
   service: name=chrony state=restarted
   when: restart_chrony|changed
