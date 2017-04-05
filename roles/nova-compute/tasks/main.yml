@@ -1,15 +1,21 @@
 ---
 - name: Install nova-compute
   apt: name=nova-compute state=present
+
 - name: Modify /etc/nova/nova.conf
   template: src="../../../common-templates/compute-nova.conf" dest=/etc/nova/nova.conf
+  register: nova_conf_changed
+
 - name: Test if the compute node supports hardware acceleration
   shell: egrep -c '(vmx|svm)' /proc/cpuinfo
   register: hardware_acceleration
   ignore_errors: yes
-  register: hardware_acceleration
+
 - name: Modify /etc/nova/nova-compute.conf
   template: src=nova-compute.conf dest=/etc/nova/nova-compute.conf
+  register: nova_compute_conf_changed
+  when: hardware_acceleration|failed
+
 - name: Restart nova-compute
   service: name=nova-compute state=restarted
-
+  when: nova_conf_changed|changed or nova_compute_conf_changed|changed
