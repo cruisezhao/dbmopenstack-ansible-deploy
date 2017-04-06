@@ -1,0 +1,101 @@
+- name: create glance database
+  mysql_db: name=glance state=present
+
+- name: ceate glance db user and grant priv
+  mysql_user: name=glance password={{glance_db_password}} priv=glance.*:ALL host={{item}} state=present
+  with_items:
+    - "%"
+    - localhost
+
+- name: Test if glance service already exists
+  shell: openstack service list|grep glance
+  register: glance_service
+  ignore_errors: yes
+
+- name: Create glance service
+  shell: openstack service create --name glance --description "OpenStack Image" image
+  when: glance_service|failed
+
+- name: Test if glance user already exists
+  shell: openstack user list | grep glance
+  register: glance_user
+  ignore_errors: yes
+      
+- name: Create glance user
+  shell: openstack user create --domain default --password {{glance_db_password}} glance
+  when: glance_user|failed
+      
+- name: Test if glance admin role be added
+  shell: openstack role assignment list|awk '{print $4}'|grep "`openstack user list|grep glance|awk '{print $2}'`"
+  register: glance_role
+  ignore_errors: yes
+    
+- name: Glance add admin role
+  shell: openstack role add --project service --user glance admin
+  when: glance_role|failed
+
+- name: Test if glance public endpoint already exists
+  shell: openstack endpoint list |grep 'glance.*public'
+  register: glance_public_endpoint
+  ignore_errors: yes
+      
+- name: Create glance public endpoint
+  shell: openstack endpoint create --region RegionOne image public {{image_service_API_endpoint}}
+  when: glance_public_endpoint|failed
+    
+- name: Test if glance internal endpoint already exists
+  shell: openstack endpoint list |grep 'glance.*internal'
+  register: glance_internal_endpoint
+  ignore_errors: yes
+      
+- name: Create glance internal endpoint
+  shell: openstack endpoint create --region RegionOne image internal {{image_service_API_endpoint}}
+  when: glance_internal_endpoint|failed
+
+- name: Test if glance admin endpoint already exists
+  shell: openstack endpoint list |grep 'glance.*admin'
+  register: glance_admin_endpoint
+  ignore_errors: yes
+      
+- name: Create glance admin endpoint
+  shell: openstack endpoint create --region RegionOne image admin {{image_service_API_endpoint}}
+  when: glance_admin_endpoint|failed
+
+- name: Install glance
+  apt: name=glance state=present
+
+- name: Replace glance-api conf
+  template: src=templates/glance-api.conf.j2 dest=/etc/glance/glance-api.conf backup=yes
+ 
+- name: Replace glance-registry conf
+  template: src=templates/glance-registry.conf.j2 dest=/etc/glance/glance-registry.conf backup=yes
+
+- name: Glance db_sync
+  shell: su -s /bin/sh -c "glance-manage db_sync" glance
+
+- name: Resteart glance-api and glance-registry service
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: true
+  with_items:
+      - glance-api
+      - glance-registry
+
+- name: Test if cirros already download
+  shell: test -e /root/cirros-0.3.4-x86_64-disk.img
+  register: cirros_download
+  ignore_errors: yes
+        
+- name: Wget cirros
+  shell: wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+  when: cirros_download|failed
+
+- name: Test if cirros be added
+  shell: openstack image list|grep cirros
+  register: image_cirros
+  ignore_errors: yes
+    
+- name: Create Image "cirros"
+  shell: openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public
+  when: image_cirros|failed
