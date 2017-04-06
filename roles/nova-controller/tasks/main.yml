@@ -21,6 +21,7 @@
   shell: openstack user list | grep nova
   register: nova_user
   ignore_errors: yes
+  changed_when: false
 
 - name: Create nova user on keystone
   shell: openstack user create --domain default --password {{os_nova_password}} nova
@@ -30,6 +31,7 @@
   shell: openstack role assignment list|awk '{print $4}'|grep "`openstack user list|grep nova|awk '{print $2}'`"
   register: admin_role
   ignore_errors: yes
+  changed_when: false
 
 - name: Add the admin role to user "nova"
   shell: openstack role add --project service --user nova admin
@@ -39,6 +41,7 @@
   shell: openstack service list |grep compute
   register: nova_entity
   ignore_errors: yes
+  changed_when: false
 
 - name: Create the nova service entity
   shell: openstack service create --name nova --description "OpenStack Compute" compute
@@ -48,6 +51,7 @@
   shell: openstack endpoint list |grep 'nova.*public'
   register: nova_public_endpoint
   ignore_errors: yes
+  changed_when: false
 
 - name: Create nova public endpoint
   shell: openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%\(tenant_id\)s
@@ -57,6 +61,7 @@
   shell: openstack endpoint list |grep 'nova.*internal'
   register: nova_internal_endpoint
   ignore_errors: yes
+  changed_when: false
 
 - name: Create nova internal endpoint
   shell: openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s
@@ -66,6 +71,7 @@
   shell: openstack endpoint list |grep 'nova.*admin'
   register: nova_admin_endpoint
   ignore_errors: yes
+  changed_when: false
 
 - name: Create nova admin endpoint
   shell: openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s

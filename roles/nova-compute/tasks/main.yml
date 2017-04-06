@@ -10,6 +10,7 @@
   shell: egrep -c '(vmx|svm)' /proc/cpuinfo
   register: hardware_acceleration
   ignore_errors: yes
+  changed_when: false
 
 - name: Modify /etc/nova/nova-compute.conf
   template: src=nova-compute.conf dest=/etc/nova/nova-compute.conf backup=yes
