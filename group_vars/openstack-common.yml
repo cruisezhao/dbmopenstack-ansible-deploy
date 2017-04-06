@@ -23,3 +23,12 @@ general_password: "{{admin_password}}"
 
 auth_options: "--os-username={{os_admin}} --os-password={{os_admin_password}} --os-auth-url={{os_url}} --os-identity-api-version=3 --os-project-domain-name=default --os-domain-name=default --os-project-name=admin"
 
+openstack_environment:
+  OS_PROJECT_DOMAIN_NAME: Default
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: admin
+  OS_USERNAME: "{{os_admin}}"
+  OS_PASSWORD: "{{os_admin_password}}"
+  OS_AUTH_URL: "{{os_url}}"
+  OS_IDENTITY_API_VERSION: 3
+  OS_IMAGE_API_VERSION: 2
