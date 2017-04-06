@@ -28,16 +28,15 @@ echo "10.0.0.11 controller
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  # Use the same key for each machine
   config.ssh.insert_key = false
   config.vm.provision "file", source: "/root/.ssh/id_rsa.pub", destination: "/tmp/id_rsa.pub"
   config.vm.provision "shell", inline: $script1
   config.vm.provision "shell", inline: $script3
-  config.vm.boot_timeout = 1000
+  config.vm.boot_timeout = 600
   config.vm.synced_folder '.', '/vagrant', disabled: true
+  config.vm.box = "bento/ubuntu-16.04"
 
   config.vm.define "controller" do |controller|
-    controller.vm.box = "bento/ubuntu-16.04"
     controller.vm.hostname = "controller"
     controller.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true	  
     controller.vm.network "forwarded_port", guest: 6080, host: 16080, auto_correct: true	  
@@ -50,9 +49,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "network" do |network|
-    network.vm.box = "bento/ubuntu-16.04"
     network.vm.hostname = "network"
-	network.vm.boot_timeout = 600
     network.vm.provision "shell", inline: $script2
     network.vm.network "private_network", type: "dhcp", auto_config: false	
     network.vm.network "private_network", ip: "10.0.0.21"
@@ -64,25 +61,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  config.vm.define "compute01" do |compute|
-    compute.vm.box = "bento/ubuntu-16.04"
-    compute.vm.hostname = "compute01"	
-	compute.vm.boot_timeout = 600
-    compute.vm.provision "shell", inline: $script2
-    compute.vm.network "private_network", type: "dhcp", auto_config: false	
-    compute.vm.network "private_network", ip: "10.0.0.31"
-    compute.vm.network "private_network", ip: "192.168.100.31"	
-    compute.vm.provider "virtualbox" do |v|
+  config.vm.define "compute01" do |compute01|
+    compute01.vm.hostname = "compute01"	
+    compute01.vm.provision "shell", inline: $script2
+    compute01.vm.network "private_network", type: "dhcp", auto_config: false	
+    compute01.vm.network "private_network", ip: "10.0.0.31"
+    compute01.vm.network "private_network", ip: "192.168.100.31"	
+    compute01.vm.provider "virtualbox" do |v|
       v.memory = 8192
       v.cpus = 4
       v.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
     end
   end
 
+  config.vm.define "cinder" do |cinder|
+    cinder.vm.hostname = "cinder"	  
+    cinder.vm.network "private_network", ip: "10.0.0.41"
+    cinder.vm.network "private_network", ip: "192.168.100.41"
+    cinder.vm.provider "virtualbox" do |v|
+      v.memory = 8192
+      v.cpus = 4
+    end
+  end
+  
   config.vm.define "ceph01" do |ceph01|
-    ceph01.vm.box = "bento/ubuntu-16.04"
-    ceph01.vm.hostname = "ceph01"
-    ceph01.vm.boot_timeout = 600	
+    ceph01.vm.hostname = "ceph01"	
     ceph01.vm.network "private_network", ip: "192.168.100.110"
     ceph01.vm.network "private_network", ip: "192.168.200.110"		
     ceph01.vm.provider "virtualbox" do |v|
@@ -96,9 +99,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "ceph02" do |ceph02|
-    ceph02.vm.box = "bento/ubuntu-16.04"
     ceph02.vm.hostname = "ceph02"
-    ceph02.vm.boot_timeout = 600	
     ceph02.vm.network "private_network", ip: "192.168.100.111"
     ceph02.vm.network "private_network", ip: "192.168.200.111"	
     ceph02.vm.provider "virtualbox" do |v|
@@ -112,9 +113,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "ceph03" do |ceph03|
-    ceph03.vm.box = "bento/ubuntu-16.04"
     ceph03.vm.hostname = "ceph03"
-    ceph03.vm.boot_timeout = 600	
     ceph03.vm.network "private_network", ip: "192.168.100.121"
     ceph03.vm.network "private_network", ip: "192.168.200.121"	
     ceph03.vm.provider "virtualbox" do |v|
@@ -128,9 +127,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "ceph04" do |ceph04|
-    ceph04.vm.box = "bento/ubuntu-16.04"
-    ceph04.vm.hostname = "ceph04"
-    ceph04.vm.boot_timeout = 600	
+    ceph04.vm.hostname = "ceph04"	
     ceph04.vm.network "private_network", ip: "192.168.100.131"
     ceph04.vm.network "private_network", ip: "192.168.200.131"	
     ceph04.vm.provider "virtualbox" do |v|
