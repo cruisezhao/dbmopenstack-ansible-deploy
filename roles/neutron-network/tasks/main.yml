@@ -44,7 +44,7 @@
     - neutron-metadata-agent
     - python-neutronclient
 
-- name: copy /etc/neutron/neutron.conf 
+- name: template /etc/neutron/neutron.conf 
   template: 
     src: neutron.conf.j2
     dest: /etc/neutron/neutron.conf
@@ -65,7 +65,7 @@
     group: neutron
     backup: yes
 
-- name: copy /etc/neutron/metadata_agent.ini
+- name: template /etc/neutron/metadata_agent.ini
   template:
     src: metadata_agent.ini.j2
     dest: /etc/neutron/metadata_agent.in
@@ -73,9 +73,9 @@
     backup: yes
 
 
-- name: copy /etc/neutron/plugins/ml2/ml2_conf.ini 
-  copy:
-    src: ml2_conf.ini
+- name: template /etc/neutron/plugins/ml2/ml2_conf.ini 
+  template:
+    src: ml2_conf.ini.j2
     dest: /etc/neutron/plugins/ml2/ml2_conf.ini
     group: neutron
     backup: yes
