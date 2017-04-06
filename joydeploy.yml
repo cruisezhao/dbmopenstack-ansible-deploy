@@ -2,7 +2,34 @@
 - hosts: controller
   remote_user: root
   gather_facts: False
+  environment: 
+    OS_PROJECT_DOMAIN_NAME: default 
+    OS_USER_DOMAIN_NAME: default 
+    OS_PROJECT_NAME: admin 
+    OS_USERNAME: admin 
+    OS_PASSWORD: "{{os_admin_password}}"
+    OS_AUTH_URL: "{{os_url}}"
+    OS_IDENTITY_API_VERSION: 3
+    OS_IMAGE_API_VERSION: 2
+   
+  pre_tasks:
+    - name: Test keystone
+      stat: path=/var/log/keystone_installation
+      register: ks_state
+#  tasks:
+#    - name: test user heat
+#      shell: 
+#        openstack user list |grep heat
+#      register: heat_user
+#
+#    - name: Create user heat
+#      shell: 
+#        openstack user create --domain default --password {{heat_password}} heat  
+#      when: heat_user|failed
   roles:
+
     - role: prepare-controller
     - role: keystone
+      when: ks_state.stat.exists ==false
     - role: glance
+    - role: heat
