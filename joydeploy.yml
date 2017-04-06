@@ -2,15 +2,7 @@
 - hosts: controller
   remote_user: root
   gather_facts: False
-  environment: 
-    OS_PROJECT_DOMAIN_NAME: default 
-    OS_USER_DOMAIN_NAME: default 
-    OS_PROJECT_NAME: admin 
-    OS_USERNAME: admin 
-    OS_PASSWORD: "{{os_admin_password}}"
-    OS_AUTH_URL: "{{os_url}}"
-    OS_IDENTITY_API_VERSION: 3
-    OS_IMAGE_API_VERSION: 2
+  environment: "{{ openstack_environment }}"
    
   pre_tasks:
     - name: Test keystone
