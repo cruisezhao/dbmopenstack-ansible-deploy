@@ -9,24 +9,27 @@
     
     - name: Create Glance service
       shell: |
-        export {{admin_openrc}}; 
-        openstack service list|grep glance || openstack service create --name glance --description "OpenStack Image" image
+        export {{admin_openrc}} 
+        openstack service list|grep glance || (openstack service create --name glance --description "OpenStack Image" image;)
+      changed_when: False
+
 
     - name: Create user and add role
       shell: |
-        export {{admin_openrc}}; 
+        export {{admin_openrc}} 
         openstack user create --domain default --password {{glance_db_password}} glance;
         openstack role add --project service --user glance admin;
 
     - name: Create glance endpoint
       shell: |
-        export {{admin_openrc}}; 
+        export {{admin_openrc}} 
         openstack endpoint list|grep glance || ( openstack endpoint create --region RegionOne image public {{image_service_API_endpoint}};
         openstack endpoint create --region RegionOne image internal {{image_service_API_endpoint}};
         openstack endpoint create --region RegionOne image admin {{image_service_API_endpoint}};)
+      changed_when: False
   
     - name: Install glance
-      apt: name=glance state=present
+      apt: name=glance
 
     - name: Replace glance-api conf
       template: src=templates/glance-api.conf.j2 dest=/etc/glance/glance-api.conf
@@ -47,9 +50,11 @@
         - glance-registry
 
     - name: Wget cirros
-      shell: test -e /root/cirros-0.3.4-x86_64-disk.img || wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+      shell: test -e /root/cirros-0.3.4-x86_64-disk.img || (wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img)
+      changed_when: False
 
     - name: Create Image
       shell: |
-        export {{admin_openrc}}; 
+        export {{admin_openrc}} 
         openstack image list|grep cirros || (openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public)
+      changed_when: False
