@@ -59,7 +59,8 @@
     mode: 0640
     backup: yes
 
-- name: copy ml2_conf.ini 
+
+- name: Template ml2_conf.ini 
   template:
     src: ml2_conf.ini.j2
     dest: /etc/neutron/plugins/ml2/ml2_conf.ini
