@@ -1,0 +1,4 @@
+---
+
+cinder_volume_device: /dev/sdb
+cinder_volume_name: cinder-volumes
