@@ -1,24 +1,35 @@
 ---
+- name: Create log director  
+  file: path=/var/log/cinder_setup state=directory mode=0666 
+
 
 - name: test if lvm disk exist
-  shell: fdisk -l {{cinder_volume_device}}` 
+  shell: fdisk -l {{cinder_volume_device}}  
   register: lvm
   ignore_errors: true
+
+- name: test if create lvm again
+  stat: path=/var/log/cinder_setup/.cinder_lvm_created
+  register: cinder_lvm
+  when: lvm.rc == 0  
 
 - name: install lvm
   apt: name={{item}} force=yes
   with_items:
      - lvm2
      - tgt
-  when: lvm.rc == 0
+  when: cinder_lvm.stat.exists ==false
+  ignore_errors: true
 
 - name: Create the LVM physical volume
   shell: pvcreate {{cinder_volume_device}}
-  when: lvm.rc == 0 
+  when: cinder_lvm.stat.exists ==false
+  ignore_errors: true
 
 - name: Create the LVM volume group 
-  shell: vgcreate {{cinder_volume_name}} {{cinder_volume_device}}
-  when: lvm.rc == 0
+  shell: vgcreate {{cinder_volume_name}} {{cinder_volume_device}} && touch /var/log/cinder_setup/.cinder_lvm_created
+  when: cinder_lvm.stat.exists ==false
+  ignore_errors: true
 
 - name: install cinder volume
   apt: name=cinder-volume force=yes
@@ -31,4 +42,4 @@
 
 - name: restart tgt service 
   service: name=tgt state=restarted enabled=yes
-  when: lvm.rc == 0
+  when: cinder_lvm.stat.exists ==false
