@@ -4,5 +4,5 @@
  
     
   - name: file dashboard file 
-    template: src=local_settings.py dest=/etc/openstack-dashboard/local_settings.py
+    template: src=local_settings.py dest=/etc/openstack-dashboard/local_settings.py backup=yes
     notify: restart apache2
