@@ -1,23 +1,34 @@
 ---
- 
+
+- name: test if lvm disk exist
+  shell: fdisk -l {{cinder_volume_device}}` 
+  register: lvm
+  ignore_errors: true
+
 - name: install lvm
   apt: name={{item}} force=yes
   with_items:
      - lvm2
-     - cinder-volume
      - tgt
+  when: lvm.rc == 0
 
 - name: Create the LVM physical volume
   shell: pvcreate {{cinder_volume_device}}
- 
+  when: lvm.rc == 0 
+
 - name: Create the LVM volume group 
   shell: vgcreate {{cinder_volume_name}} {{cinder_volume_device}}
+  when: lvm.rc == 0
+
+- name: install cinder volume
+  apt: name=cinder-volume force=yes
 
 - name: copy cinder.conf
   template: src=cinder.conf.j2 dest=/etc/cinder/cinder.conf
 
-- name: restart tgt, cinder-volume service
-  service: name={{item}} state=restarted enabled=yes
-  with_items:
-     - tgt
-     - cinder-volume
+- name: restart  cinder-volume service
+  service: name=cinder-volume state=restarted enabled=yes
+
+- name: restart tgt service 
+  service: name=tgt state=restarted enabled=yes
+  when: lvm.rc == 0
