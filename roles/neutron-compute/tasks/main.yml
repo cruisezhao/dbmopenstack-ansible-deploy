@@ -88,8 +88,24 @@
   register: overlay_network
 
 
+- name: Get empty interface
+  shell: >
+     IPs=`ifconfig -s | awk '{print $1}' | grep -v "Iface"`;empty_if=;
+     for i in $IPs ;
+     do ip=`ifconfig $i | egrep  "inet\s+addr:[[:digit:]]+.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+"`; 
+       if [ -z "$ip" ] ; 
+         then empty_if=$i; 
+         break;
+       fi;
+     done;
+     echo $empty_if;
+  register: empty_if
+
 - name: test overlay_network
   debug: msg={{overlay_network}}
+
+- name: test empty_if
+  debug: msg={{empty_if}}
 
 - name: Tempalte /etc/neutron/plugins/ml2/linuxbridge_agent.ini 
   template:
