@@ -71,7 +71,7 @@
 
 - name: Create Service  project
   shell: >
-    openstack project create --domain default  {{auth_options}} --description 'Service Project' service ;
+    openstack project create --domain default   --description 'Service Project' service ;
     touch /var/log/keystone_installation/.service_project_created
   when: service_project.stat.exists ==false
 
@@ -82,7 +82,7 @@
 
 - name: Create demo  project
   shell: >
-    openstack project create --domain default --description 'Demo Project' demo {{auth_options}};
+    openstack project create --domain default --description 'Demo Project' demo ;
     touch /var/log/keystone_installation/.demo_project_created
   when: demo_project.stat.exists ==false
 
@@ -92,7 +92,7 @@
     
 - name: Create demo user
   shell: >
-    openstack user create --domain default --password {{demo_password}} demo {{auth_options}};
+    openstack user create --domain default --password {{demo_password}} demo ;
     touch /var/log/keystone_installation/.demo_user_created
   when: demo_user.stat.exists ==false 
 
@@ -103,7 +103,7 @@
 
 - name: Create role user
   shell: > 
-    openstack role create user {{auth_options}};
+    openstack role create user ;
     touch /var/log/keystone_installation/.user_role_created
   when: role_user.stat.exists ==false 
 
@@ -115,7 +115,7 @@
 
 - name: Add demo to user role
   shell: >
-    openstack role add --project demo --user demo user {{auth_options}} ;
+    openstack role add --project demo --user demo user  ;
     touch /var/log/keystone_installation/.demo_user_role
   sudo: True
   when: demo_role_user.stat.exists ==false
