@@ -1,0 +1,4 @@
+---
+keystone_db_user : keystone
+keystone_db : keystone
+keystone_user : keystone

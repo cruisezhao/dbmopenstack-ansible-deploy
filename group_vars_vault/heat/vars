@@ -1,0 +1,5 @@
+---
+heat_db: heat
+heat_db_user: heat
+orchestration_service_API_endpoints: "http://controller:8004/v1/%(tenant_id)s"
+cloudformation_service_API_endpoints: "http://controller:8000/v1"
