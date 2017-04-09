@@ -25,6 +25,9 @@
   shell: add-apt-repository cloud-archive:{{openstack_version}} -y
   when: list_stat.stat.exists == false
 
+- name: apt update   
+  apt: update_cache=yes
+
 - name: upgrade all packages
   apt: upgrade=dist
 
