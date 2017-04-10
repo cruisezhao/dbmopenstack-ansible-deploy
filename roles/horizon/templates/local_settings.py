@@ -728,73 +728,26 @@ SECURITY_GROUP_RULES = {
     },
 }
 
-# Deprecation Notice:
-#
-# The setting FLAVOR_EXTRA_KEYS has been deprecated.
-# Please load extra spec metadata into the Glance Metadata Definition Catalog.
-#
-# The sample quota definitions can be found in:
-# <glance_source>/etc/metadefs/compute-quota.json
-#
-# The metadata definition catalog supports CLI and API:
-#  $glance --os-image-api-version 2 help md-namespace-import
-#  $glance-manage db_load_metadefs <directory_with_definition_files>
-#
-# See Metadata Definitions on: http://docs.openstack.org/developer/glance/
 
-# TODO: (david-lyle) remove when plugins support settings natively
-# Note: This is only used when the Sahara plugin is configured and enabled
-# for use in Horizon.
-# Indicate to the Sahara data processing service whether or not
-# automatic floating IP allocation is in effect.  If it is not
-# in effect, the user will be prompted to choose a floating IP
-# pool for use in their cluster.  False by default.  You would want
-# to set this to True if you were running Nova Networking with
-# auto_assign_floating_ip = True.
-#SAHARA_AUTO_IP_ALLOCATION_ENABLED = False
 
-# The hash algorithm to use for authentication tokens. This must
-# match the hash algorithm that the identity server and the
-# auth_token middleware are using. Allowed values are the
-# algorithms supported by Python's hashlib library.
-#OPENSTACK_TOKEN_HASH_ALGORITHM = 'md5'
 
-# AngularJS requires some settings to be made available to
-# the client side. Some settings are required by in-tree / built-in horizon
-# features. These settings must be added to REST_API_REQUIRED_SETTINGS in the
-# form of ['SETTING_1','SETTING_2'], etc.
-#
-# You may remove settings from this list for security purposes, but do so at
-# the risk of breaking a built-in horizon feature. These settings are required
-# for horizon to function properly. Only remove them if you know what you
-# are doing. These settings may in the future be moved to be defined within
-# the enabled panel configuration.
-# You should not add settings to this list for out of tree extensions.
-# See: https://wiki.openstack.org/wiki/Horizon/RESTAPI
+
+
+
+
 REST_API_REQUIRED_SETTINGS = ['OPENSTACK_HYPERVISOR_FEATURES',
                               'LAUNCH_INSTANCE_DEFAULTS',
                               'OPENSTACK_IMAGE_FORMATS']
 
-# Additional settings can be made available to the client side for
-# extensibility by specifying them in REST_API_ADDITIONAL_SETTINGS
-# !! Please use extreme caution as the settings are transferred via HTTP/S
-# and are not encrypted on the browser. This is an experimental API and
-# may be deprecated in the future without notice.
-#REST_API_ADDITIONAL_SETTINGS = []
 
-###############################################################################
-# Ubuntu Settings
-###############################################################################
 
- # The default theme if no cookie is present
+
 DEFAULT_THEME = 'ubuntu'
 
-# Default Ubuntu apache configuration uses /horizon as the application root.
+
 WEBROOT='/horizon/'
 
-# By default, validation of the HTTP Host header is disabled.  Production
-# installations should have this set accordingly.  For more information
-# see https://docs.djangoproject.com/en/dev/ref/settings/.
+
 ALLOWED_HOSTS = ['*', ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
@@ -807,79 +760,16 @@ CACHES = {
 }
 
 
-# Compress all assets offline as part of packaging installation
+
 COMPRESS_OFFLINE = True
 
-# DISALLOW_IFRAME_EMBED can be used to prevent Horizon from being embedded
-# within an iframe. Legacy browsers are still vulnerable to a Cross-Frame
-# Scripting (XFS) vulnerability, so this option allows extra security hardening
-# where iframes are not used in deployment. Default setting is True.
-# For more information see:
-# http://tinyurl.com/anticlickjack
-#DISALLOW_IFRAME_EMBED = True
 
-# Help URL can be made available for the client. To provide a help URL, edit the
-# following attribute to the URL of your choice.
-#HORIZON_CONFIG["help_url"] = "http://openstack.mycompany.org"
 
-# Settings for OperationLogMiddleware
-# OPERATION_LOG_ENABLED is flag to use the function to log an operation on
-# Horizon.
-# mask_targets is arrangement for appointing a target to mask.
-# method_targets is arrangement of HTTP method to output log.
-# format is the log contents.
-#OPERATION_LOG_ENABLED = False
-#OPERATION_LOG_OPTIONS = {
-#    'mask_fields': ['password'],
-#    'target_methods': ['POST'],
-#    'format': ("[%(domain_name)s] [%(domain_id)s] [%(project_name)s]"
-#        " [%(project_id)s] [%(user_name)s] [%(user_id)s] [%(request_scheme)s]"
-#        " [%(referer_url)s] [%(request_url)s] [%(message)s] [%(method)s]"
-#        " [%(http_status)s] [%(param)s]"),
-#}
 
-# The default date range in the Overview panel meters - either <today> minus N
-# days (if the value is integer N), or from the beginning of the current month
-# until today (if set to None). This setting should be used to limit the amount
-# of data fetched by default when rendering the Overview panel.
-#OVERVIEW_DAYS_RANGE = 1
 
-# To allow operators to require users provide a search criteria first
-# before loading any data into the views, set the following dict
-# attributes to True in each one of the panels you want to enable this feature.
-# Follow the convention <dashboard>.<view>
-#FILTER_DATA_FIRST = {
-#    'admin.instances': False,
-#    'admin.images': False,
-#    'admin.networks': False,
-#    'admin.routers': False,
-#    'admin.volumes': False
-#}
 
-# Dict used to restrict user private subnet cidr range.
-# An empty list means that user input will not be restricted
-# for a corresponding IP version. By default, there is
-# no restriction for IPv4 or IPv6. To restrict
-# user private subnet cidr range set ALLOWED_PRIVATE_SUBNET_CIDR
-# to something like
-#ALLOWED_PRIVATE_SUBNET_CIDR = {
-#    'ipv4': ['10.0.0.0/8', '192.168.0.0/16'],
-#    'ipv6': ['fc00::/7']
-#}
+
+
 ALLOWED_PRIVATE_SUBNET_CIDR = {'ipv4': [], 'ipv6': []}
 
-# Project and user can have any attributes by keystone v3 mechanism.
-# This settings can treat these attributes on Horizon.
-# It means, when you show Create/Update modal, attribute below is
-# shown and you can specify any value.
-# If you'd like to display these extra data in project or user index table,
-# Keystone v3 allows you to add extra properties to Project and Users.
-# Horizon's customization (http://docs.openstack.org/developer/horizon/topics/customizing.html#horizon-customization-module-overrides)
-# allows you to display this extra information in the Create/Update modal and
-# the corresponding tables.
-#PROJECT_TABLE_EXTRA_INFO = {
-#   'phone_num': _('Phone Number'),
-#}
-#USER_TABLE_EXTRA_INFO = {
-#   'phone_num': _('Phone Number'),
-#}
+TIME_ZONE = “America/Chicago”
