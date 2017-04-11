@@ -1,0 +1,5 @@
+---
+- include: deploy_controller.yml
+- include: deploy_compute.yml
+- include: deploy_network.yml
+- include: deploy_cinder.yml

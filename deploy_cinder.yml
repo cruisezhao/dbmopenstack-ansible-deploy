@@ -1,0 +1,7 @@
+---
+- name: Deploy Cinder
+  hosts: cinder
+  gather_facts: no
+  roles:
+    - prepare-others
+    - cinder

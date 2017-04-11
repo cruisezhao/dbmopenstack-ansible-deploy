@@ -1,0 +1,13 @@
+---
+- name: Deploy Contoller
+  hosts: controller
+  gather_facts: no
+  roles:
+    - prepare-controller
+    - keystone
+    - glance
+    - nova-controller
+    - neutron-controller
+    - horizon
+    - cinder-controller
+    - heat

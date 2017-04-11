@@ -1,0 +1,7 @@
+---
+- name: Deploy Network
+  hosts: network
+  gather_facts: no
+  roles:
+    - prepare-others
+    - neutron-network

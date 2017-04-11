@@ -52,7 +52,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "network" do |network|
     network.vm.hostname = "network"
     network.vm.provision "shell", inline: $script2
-    network.vm.network "private_network", type: "dhcp", auto_config: false	
+    network.vm.network "public_network", auto_config: false	
     network.vm.network "private_network", ip: "10.0.0.21"
     network.vm.network "private_network", ip: "192.168.100.21"	
     network.vm.provider "virtualbox" do |v|
@@ -65,7 +65,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "compute01" do |compute01|
     compute01.vm.hostname = "compute01"	
     compute01.vm.provision "shell", inline: $script2
-    compute01.vm.network "private_network", type: "dhcp", auto_config: false	
+    compute01.vm.network "public_network", auto_config: false	
     compute01.vm.network "private_network", ip: "10.0.0.31"
     compute01.vm.network "private_network", ip: "192.168.100.31"	
     compute01.vm.provider "virtualbox" do |v|
@@ -88,7 +88,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk_cinder]
     end
   end
-
+  
   config.vm.define "ceph01" do |ceph01|
     ceph01.vm.hostname = "ceph01"	
     ceph01.vm.network "private_network", ip: "192.168.100.110"

@@ -1,0 +1,8 @@
+---
+- name: Deploy Compute
+  hosts: compute01
+  gather_facts: no
+  roles:
+    - prepare-others
+    - nova-compute
+    - neutron-compute
