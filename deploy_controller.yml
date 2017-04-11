@@ -2,7 +2,7 @@
 - name: Deploy Contoller
   hosts: controller
   gather_facts: no
-  environment: {{openstack_environment}}
+  environment: "{{openstack_environment}}"
   roles:
     - prepare-controller
     - keystone
