@@ -1,5 +1,6 @@
 ---
-- hosts: controller
+- name: Prepare controller node
+  hosts: controller
   remote_user: root
   gather_facts: False
   environment: "{{ openstack_environment }}"
@@ -10,9 +11,32 @@
       register: ks_state
 
   roles:
-
     - role: prepare-controller
     - role: keystone
       when: ks_state.stat.exists ==false
     - role: glance
+    - role: nova-controller
+    - role: neutron-controller
     - role: heat
+    - role: horizon
+
+- name: Prepare compute01 node
+  hosts: compute01
+  remote_user: root
+  gather_facts: False
+  environment: "{{ openstack_environment }}"
+
+  roles:
+    - role: prepare-others
+    - role: nova-compute
+    - role: neutron-compute
+
+- name: Prepare network node
+  hosts: network
+  remote_user: root
+  gather_facts: False
+  environment: "{{ openstack_environment }}"
+
+  roles:
+    - role: prepare-others
+    - role: neutron-network
