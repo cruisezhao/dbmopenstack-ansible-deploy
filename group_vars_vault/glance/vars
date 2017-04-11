@@ -1,0 +1,5 @@
+---
+glance_db_user: glance
+glance_db: glance
+glance_user: glance
+image_service_API_endpoint: "http://controller:9292"

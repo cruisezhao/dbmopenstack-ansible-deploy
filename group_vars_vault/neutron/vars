@@ -1,16 +1,11 @@
+---
 neutron_db_server: 10.0.0.11
 neutron_db: neutron
 neutron_db_user: neutron
-neutron_db_password: Data8ase-mart
 os_neutron_user: neutron
-os_neutron_password: Data8ase-mart
 neutron_memcached_servers: 10.0.0.11
 neutron_controller: controller
-os_metadata_secrete: Data8ase-Secrete
-
 os_network_server_ip: 10.0.0.21
-
 os_neutron_overlay_network_starts_with: 192.168.100.
-
 #os_neutron_physnet__nic: enp0s8
 os_neutron_physnet: physnet

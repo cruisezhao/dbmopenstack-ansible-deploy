@@ -1,0 +1,4 @@
+---
+cinder_db_user: cinder
+cinder_db: cinder
+os_cinder_user: cinder
