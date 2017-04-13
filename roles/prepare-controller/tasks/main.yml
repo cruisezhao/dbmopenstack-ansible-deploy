@@ -12,7 +12,7 @@
   register: restart_chrony
 
 - name: install software-properties-common
-  apt: name=software-properties-common state=present
+  apt: name=software-properties-common state=latest
 
 - name: stat /etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
   stat: path=/etc/apt/sources.list.d/cloudarchive-{{openstack_version}}.list
