@@ -68,7 +68,7 @@
 - name: template /etc/neutron/metadata_agent.ini
   template:
     src: metadata_agent.ini.j2
-    dest: /etc/neutron/metadata_agent.in
+    dest: /etc/neutron/metadata_agent.ini
     group: neutron
     backup: yes
 

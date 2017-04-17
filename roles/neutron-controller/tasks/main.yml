@@ -48,9 +48,7 @@
     - neutron-server
     - neutron-plugin-ml2
     - python-neutronclient 
-    ### For testing nova.conf template
-    - nova-api
-    #################################
+
 - name: copy file /etc/neutron/neutron.conf 
   template:
     src: neutron.conf.j2
